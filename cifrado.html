@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Cifrado - Cesar y Atbash</title>
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .method-selector {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .method-btn {
+            padding: 12px 30px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .method-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .method-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea, input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        textarea:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-encrypt {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-encrypt:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-decrypt {
+            background: #764ba2;
+            color: white;
+        }
+
+        .btn-decrypt:hover {
+            background: #653a8a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4);
+        }
+
+        .result-box {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .result-box h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .result-text {
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .cesar-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid #2196f3;
+        }
+
+        .info-box p {
+            color: #1565c0;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            .method-selector {
+                flex-direction: column;
+            }
+
+            .cesar-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sistema de Cifrado</h1>
+        <p class="subtitle">Metodos Cesar y Atbash</p>
+
+        <!-- Selector de metodo de cifrado -->
+        <div class="method-selector">
+            <button class="method-btn active" onclick="selectMethod('cesar')">Cifrado Cesar</button>
+            <button class="method-btn" onclick="selectMethod('atbash')">Cifrado Atbash</button>
+        </div>
+
+        <!-- Seccion del metodo Cesar -->
+        <div id="cesarMethod">
+            <div class="info-box">
+                <p><strong>Cifrado Cesar:</strong> Desplaza cada caracter un numero fijo de posiciones en el alfabeto definido.</p>
+            </div>
+
+            <div class="cesar-controls">
+                <!-- Campo para ingresar el desplazamiento -->
+                <div class="input-group">
+                    <label for="cesarShift">Desplazamiento (clave):</label>
+                    <input type="number" id="cesarShift" value="3" min="1" max="255">
+                </div>
+                <!-- Campo para definir el conjunto de caracteres -->
+                <div class="input-group">
+                    <label for="cesarCharset">Conjunto de caracteres:</label>
+                    <input type="text" id="cesarCharset" value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.;:!?">
+                </div>
+            </div>
+
+            <!-- Area de texto para ingresar el mensaje -->
+            <div class="input-group">
+                <label for="cesarInput">Texto a procesar:</label>
+                <textarea id="cesarInput" placeholder="Escribe aqui el mensaje..."></textarea>
+            </div>
+
+            <!-- Botones para cifrar y descifrar -->
+            <div class="action-buttons">
+                <button class="btn btn-encrypt" onclick="processCesar('encrypt')">Cifrar</button>
+                <button class="btn btn-decrypt" onclick="processCesar('decrypt')">Descifrar</button>
+            </div>
+
+            <!-- Caja para mostrar el resultado -->
+            <div id="cesarResult" class="result-box" style="display:none;">
+                <h3>Resultado:</h3>
+                <p class="result-text" id="cesarResultText"></p>
+            </div>
+        </div>
+
+        <!-- Seccion del metodo Atbash -->
+        <div id="atbashMethod" style="display:none;">
+            <div class="info-box">
+                <p><strong>Cifrado Atbash:</strong> Invierte el alfabeto, sustituyendo la primera letra por la ultima y viceversa.</p>
+            </div>
+
+            <!-- Campo para definir el conjunto de caracteres -->
+            <div class="input-group">
+                <label for="atbashCharset">Conjunto de caracteres:</label>
+                <input type="text" id="atbashCharset" value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789">
+            </div>
+
+            <!-- Area de texto para ingresar el mensaje -->
+            <div class="input-group">
+                <label for="atbashInput">Texto a procesar:</label>
+                <textarea id="atbashInput" placeholder="Escribe aqui el mensaje..."></textarea>
+            </div>
+
+            <!-- Boton para cifrar o descifrar -->
+            <div class="action-buttons">
+                <button class="btn btn-encrypt" onclick="processAtbash()">Cifrar / Descifrar</button>
+            </div>
+
+            <!-- Caja para mostrar el resultado -->
+            <div id="atbashResult" class="result-box" style="display:none;">
+                <h3>Resultado:</h3>
+                <p class="result-text" id="atbashResultText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funcion para cambiar entre metodos de cifrado
+        function selectMethod(method) {
+            // Obtener referencias a los botones
+            const cesarBtn = document.querySelectorAll('.method-btn')[0];
+            const atbashBtn = document.querySelectorAll('.method-btn')[1];
+            
+            // Obtener referencias a las secciones
+            const cesarDiv = document.getElementById('cesarMethod');
+            const atbashDiv = document.getElementById('atbashMethod');
+
+            // Verificar cual metodo fue seleccionado
+            if (method === 'cesar') {
+                // Activar boton de Cesar y desactivar Atbash
+                cesarBtn.classList.add('active');
+                atbashBtn.classList.remove('active');
+                
+                // Mostrar seccion de Cesar y ocultar Atbash
+                cesarDiv.style.display = 'block';
+                atbashDiv.style.display = 'none';
+            } else {
+                // Activar boton de Atbash y desactivar Cesar
+                atbashBtn.classList.add('active');
+                cesarBtn.classList.remove('active');
+                
+                // Mostrar seccion de Atbash y ocultar Cesar
+                atbashDiv.style.display = 'block';
+                cesarDiv.style.display = 'none';
+            }
+        }
+
+        // Funcion para procesar el cifrado Cesar
+        function processCesar(mode) {
+            // Obtener el texto ingresado por el usuario
+            const input = document.getElementById('cesarInput').value;
+            
+            // Obtener el valor de desplazamiento
+            const shift = parseInt(document.getElementById('cesarShift').value);
+            
+            // Obtener el conjunto de caracteres definido
+            const charset = document.getElementById('cesarCharset').value;
+            
+            // Validar que se haya ingresado texto
+            if (!input) {
+                alert('Por favor ingresa un texto para procesar');
+                return;
+            }
+
+            // Validar que se haya definido un conjunto de caracteres
+            if (!charset) {
+                alert('Por favor define un conjunto de caracteres');
+                return;
+            }
+
+            // Inicializar la cadena de resultado
+            let result = '';
+            
+            // Obtener la longitud del conjunto de caracteres
+            const charsetLength = charset.length;
+            
+            // Determinar la direccion del desplazamiento segun el modo
+            const actualShift = mode === 'encrypt' ? shift : -shift;
+
+            // Procesar cada caracter del texto
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                
+                // Buscar la posicion del caracter en el conjunto
+                const index = charset.indexOf(char);
+
+                if (index !== -1) {
+                    // El caracter esta en el conjunto, aplicar desplazamiento
+                    let newIndex = (index + actualShift) % charsetLength;
+                    
+                    // Manejar indices negativos para descifrado
+                    if (newIndex < 0) {
+                        newIndex += charsetLength;
+                    }
+                    
+                    // Agregar el caracter desplazado al resultado
+                    result += charset[newIndex];
+                } else {
+                    // El caracter no esta en el conjunto, mantenerlo sin cambios
+                    result += char;
+                }
+            }
+
+            // Mostrar el resultado en la interfaz
+            document.getElementById('cesarResultText').textContent = result;
+            document.getElementById('cesarResult').style.display = 'block';
+        }
+
+        // Funcion para procesar el cifrado Atbash
+        function processAtbash() {
+            // Obtener el texto ingresado por el usuario
+            const input = document.getElementById('atbashInput').value;
+            
+            // Obtener el conjunto de caracteres definido
+            const charset = document.getElementById('atbashCharset').value;
+
+            // Validar que se haya ingresado texto
+            if (!input) {
+                alert('Por favor ingresa un texto para procesar');
+                return;
+            }
+
+            // Validar que se haya definido un conjunto de caracteres
+            if (!charset) {
+                alert('Por favor define un conjunto de caracteres');
+                return;
+            }
+
+            // Inicializar la cadena de resultado
+            let result = '';
+            
+            // Obtener la longitud del conjunto de caracteres
+            const charsetLength = charset.length;
+
+            // Procesar cada caracter del texto
+            for (let i = 0; i < input.length; i++) {
+                const char = input[i];
+                
+                // Buscar la posicion del caracter en el conjunto
+                const index = charset.indexOf(char);
+
+                if (index !== -1) {
+                    // El caracter esta en el conjunto, calcular posicion invertida
+                    const reversedIndex = charsetLength - 1 - index;
+                    
+                    // Agregar el caracter invertido al resultado
+                    result += charset[reversedIndex];
+                } else {
+                    // El caracter no esta en el conjunto, mantenerlo sin cambios
+                    result += char;
+                }
+            }
+
+            // Mostrar el resultado en la interfaz
+            document.getElementById('atbashResultText').textContent = result;
+            document.getElementById('atbashResult').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
