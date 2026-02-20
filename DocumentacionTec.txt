@@ -1,0 +1,562 @@
+# DOCUMENTACIÓN TÉCNICA DEL CÓDIGO
+# Sistema de Cifrado César y Atbash
+
+## ÍNDICE
+1. Arquitectura General
+2. Estructura HTML
+3. Estilos CSS
+4. Lógica JavaScript
+5. Algoritmos de Cifrado
+6. Funciones Auxiliares
+7. Manejo de Eventos
+8. Validaciones y Seguridad
+
+---
+
+## 1. ARQUITECTURA GENERAL
+
+El sistema está implementado como una Single Page Application (SPA) que funciona
+completamente del lado del cliente. No requiere servidor ni conexión a internet
+una vez cargado.
+
+Componentes principales:
+- HTML: Estructura y contenido
+- CSS: Presentación visual
+- JavaScript: Lógica de negocio
+
+---
+
+## 2. ESTRUCTURA HTML
+
+### 2.1 Contenedor Principal
+```html
+<div class="container">
+```
+Contenedor que centraliza toda la aplicación. Aplica estilos de tarjeta con
+sombra y bordes redondeados.
+
+### 2.2 Encabezado
+```html
+<h1>Sistema de Cifrado Clásico</h1>
+<p class="subtitle">Métodos César y Atbash con ASCII personalizable</p>
+```
+Título principal con icono de candado y subtítulo explicativo.
+
+### 2.3 Selector de Método
+```html
+<div class="method-selector">
+    <button class="method-btn active" onclick="selectMethod('cesar')">
+        Cifrado César
+    </button>
+    <button class="method-btn" onclick="selectMethod('atbash')">
+        Cifrado Atbash
+    </button>
+</div>
+```
+Botones para alternar entre los dos métodos de cifrado. El botón activo
+se marca con la clase "active" que cambia su apariencia visual.
+
+### 2.4 Controles del Cifrado César
+```html
+<div id="cesarMethod">
+    <!-- Caja de información -->
+    <div class="info-box">
+        <p>Explicación del método</p>
+    </div>
+    
+    <!-- Controles de configuración -->
+    <div class="cesar-controls">
+        <input type="number" id="cesarShift">
+        <input type="text" id="cesarCharset">
+    </div>
+    
+    <!-- Área de texto -->
+    <textarea id="cesarInput"></textarea>
+    
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+        <button onclick="processCesar('encrypt')">Cifrar</button>
+        <button onclick="processCesar('decrypt')">Descifrar</button>
+    </div>
+    
+    <!-- Área de resultados -->
+    <div id="cesarResult" class="result-box">
+        <h3>Resultado:</h3>
+        <p id="cesarResultText"></p>
+    </div>
+</div>
+```
+
+Elementos clave:
+- cesarShift: Campo numérico para el desplazamiento
+- cesarCharset: Conjunto de caracteres personalizable
+- cesarInput: Área donde se ingresa el texto a procesar
+- cesarResult: Contenedor que muestra el resultado
+
+### 2.5 Controles del Cifrado Atbash
+```html
+<div id="atbashMethod" style="display:none;">
+    <div class="info-box">
+        <p>Explicación del método</p>
+    </div>
+    
+    <input type="text" id="atbashCharset">
+    <textarea id="atbashInput"></textarea>
+    
+    <div class="action-buttons">
+        <button onclick="processAtbash()">Cifrar / Descifrar</button>
+    </div>
+    
+    <div id="atbashResult" class="result-box">
+        <h3>Resultado:</h3>
+        <p id="atbashResultText"></p>
+    </div>
+</div>
+```
+
+Nota: Atbash solo tiene un botón porque cifrar y descifrar son la misma operación.
+
+---
+
+## 3. ESTILOS CSS
+
+### 3.1 Reset y Box-Sizing
+```css
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+```
+Elimina márgenes y padding por defecto. box-sizing: border-box hace que
+el ancho incluya padding y border.
+
+### 3.2 Body y Fondo
+```css
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+```
+- Gradiente de fondo de púrpura a violeta
+- Flexbox para centrar el contenido vertical y horizontalmente
+- min-height: 100vh asegura que ocupe toda la altura de la ventana
+
+### 3.3 Contenedor Principal
+```css
+.container {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 800px;
+    width: 100%;
+    padding: 40px;
+}
+```
+- Fondo blanco para contraste
+- Bordes redondeados y sombra para efecto de elevación
+- max-width: 800px mantiene legibilidad
+- padding: 40px crea espacio interno
+
+### 3.4 Botones de Método
+```css
+.method-btn {
+    padding: 12px 30px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s ease;
+}
+
+.method-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+.method-btn.active {
+    background: #667eea;
+    color: white;
+}
+```
+- Estado normal: Borde de color, fondo blanco
+- Hover: Se eleva ligeramente con sombra
+- Active: Fondo de color, texto blanco (inversión)
+- transition: Animaciones suaves en todos los cambios
+
+### 3.5 Campos de Entrada
+```css
+textarea, input[type="text"], input[type="number"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: border-color 0.3s ease;
+    font-family: 'Courier New', monospace;
+}
+
+textarea:focus, input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+```
+- Fuente monoespaciada para texto cifrado
+- Borde gris por defecto
+- Focus: Borde azul y sin outline por defecto del navegador
+
+### 3.6 Botones de Acción
+```css
+.btn-encrypt {
+    background: #667eea;
+    color: white;
+}
+
+.btn-encrypt:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-decrypt {
+    background: #764ba2;
+    color: white;
+}
+```
+- Colores diferenciados para cifrar (azul) y descifrar (púrpura)
+- Efectos hover consistentes con elevación
+
+### 3.7 Diseño Responsive
+```css
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+    }
+    
+    .method-selector {
+        flex-direction: column;
+    }
+    
+    .cesar-controls {
+        grid-template-columns: 1fr;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+```
+En pantallas pequeñas:
+- Reduce el padding
+- Cambia botones y controles a disposición vertical
+- Mejora usabilidad en móviles
+
+---
+
+## 4. LÓGICA JAVASCRIPT
+
+### 4.1 Función selectMethod(method)
+```javascript
+function selectMethod(method) {
+    const cesarBtn = document.querySelectorAll('.method-btn')[0];
+    const atbashBtn = document.querySelectorAll('.method-btn')[1];
+    const cesarDiv = document.getElementById('cesarMethod');
+    const atbashDiv = document.getElementById('atbashMethod');
+
+    if (method === 'cesar') {
+        cesarBtn.classList.add('active');
+        atbashBtn.classList.remove('active');
+        cesarDiv.style.display = 'block';
+        atbashDiv.style.display = 'none';
+    } else {
+        atbashBtn.classList.add('active');
+        cesarBtn.classList.remove('active');
+        atbashDiv.style.display = 'block';
+        cesarDiv.style.display = 'none';
+    }
+}
+```
+
+Funcionamiento:
+1. Obtiene referencias a los botones y secciones
+2. Según el método seleccionado:
+   - Marca el botón correspondiente como activo
+   - Muestra la sección correspondiente
+   - Oculta la otra sección
+
+### 4.2 Función processCesar(mode)
+```javascript
+function processCesar(mode) {
+    // Obtener valores de entrada
+    const input = document.getElementById('cesarInput').value;
+    const shift = parseInt(document.getElementById('cesarShift').value);
+    const charset = document.getElementById('cesarCharset').value;
+    
+    // Validaciones
+    if (!input) {
+        alert('Por favor ingresa un texto para procesar');
+        return;
+    }
+
+    if (!charset) {
+        alert('Por favor define un conjunto de caracteres');
+        return;
+    }
+
+    // Inicializar variables
+    let result = '';
+    const charsetLength = charset.length;
+    const actualShift = mode === 'encrypt' ? shift : -shift;
+
+    // Procesar cada carácter
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        const index = charset.indexOf(char);
+
+        if (index !== -1) {
+            // El carácter está en el conjunto
+            let newIndex = (index + actualShift) % charsetLength;
+            if (newIndex < 0) {
+                newIndex += charsetLength;
+            }
+            result += charset[newIndex];
+        } else {
+            // El carácter no está en el conjunto, mantenerlo sin cambios
+            result += char;
+        }
+    }
+
+    // Mostrar resultado
+    document.getElementById('cesarResultText').textContent = result;
+    document.getElementById('cesarResult').style.display = 'block';
+}
+```
+
+Desglose del algoritmo:
+1. **Captura de datos**: Lee el texto, desplazamiento y conjunto de caracteres
+2. **Validación**: Verifica que los campos necesarios tengan valores
+3. **Determinación de dirección**: Si es cifrado, usa shift positivo; si es
+   descifrado, usa shift negativo
+4. **Iteración**: Recorre cada carácter del texto:
+   - Busca su posición en el conjunto
+   - Si está: calcula nueva posición con (posición + shift) % longitud
+   - Si no está: lo deja sin cambios
+5. **Manejo de negativos**: Si el índice es negativo (al descifrar), suma
+   la longitud del conjunto para obtener el valor correcto
+6. **Visualización**: Muestra el resultado y hace visible la caja de resultados
+
+### 4.3 Función processAtbash()
+```javascript
+function processAtbash() {
+    const input = document.getElementById('atbashInput').value;
+    const charset = document.getElementById('atbashCharset').value;
+
+    if (!input) {
+        alert('Por favor ingresa un texto para procesar');
+        return;
+    }
+
+    if (!charset) {
+        alert('Por favor define un conjunto de caracteres');
+        return;
+    }
+
+    let result = '';
+    const charsetLength = charset.length;
+
+    for (let i = 0; i < input.length; i++) {
+        const char = input[i];
+        const index = charset.indexOf(char);
+
+        if (index !== -1) {
+            const reversedIndex = charsetLength - 1 - index;
+            result += charset[reversedIndex];
+        } else {
+            result += char;
+        }
+    }
+
+    document.getElementById('atbashResultText').textContent = result;
+    document.getElementById('atbashResult').style.display = 'block';
+}
+```
+
+Algoritmo Atbash:
+1. **Captura y validación**: Similar a César
+2. **Cálculo de inversión**: Para cada carácter:
+   - Encuentra su posición en el conjunto
+   - Calcula posición invertida: (longitud - 1 - posición)
+   - Ejemplo: Si charset tiene 26 letras y el carácter está en posición 0,
+     la posición invertida es 25
+3. **Simetría**: Como la inversión es simétrica, aplicar Atbash dos veces
+   devuelve el texto original
+
+---
+
+## 5. ALGORITMOS DE CIFRADO
+
+### 5.1 Cifrado César - Explicación Matemática
+
+Fórmula general:
+```
+Para cifrar:   E(x) = (x + k) mod n
+Para descifrar: D(x) = (x - k) mod n
+
+Donde:
+- x: posición del carácter en el conjunto
+- k: clave (desplazamiento)
+- n: tamaño del conjunto
+- mod: operación módulo (resto de la división)
+```
+
+Ejemplo paso a paso:
+```
+Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+n = 26
+k = 3
+
+Cifrar "HOLA":
+- H está en posición 7: (7 + 3) mod 26 = 10 → K
+- O está en posición 14: (14 + 3) mod 26 = 17 → R
+- L está en posición 11: (11 + 3) mod 26 = 14 → O
+- A está en posición 0: (0 + 3) mod 26 = 3 → D
+
+Resultado: "KROD"
+```
+
+### 5.2 Cifrado Atbash - Explicación Matemática
+
+Fórmula:
+```
+E(x) = D(x) = (n - 1) - x
+
+Donde:
+- x: posición del carácter en el conjunto
+- n: tamaño del conjunto
+```
+
+Ejemplo:
+```
+Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+n = 26
+
+Cifrar "HOLA":
+- H está en posición 7: (26-1) - 7 = 18 → S
+- O está en posición 14: (26-1) - 14 = 11 → L
+- L está en posición 11: (26-1) - 11 = 14 → O
+- A está en posición 0: (26-1) - 0 = 25 → Z
+
+Resultado: "SLOZ"
+
+Descifrar "SLOZ":
+- S está en posición 18: (26-1) - 18 = 7 → H
+- L está en posición 11: (26-1) - 11 = 14 → O
+- O está en posición 14: (26-1) - 14 = 11 → L
+- Z está en posición 25: (26-1) - 25 = 0 → A
+
+Resultado: "HOLA"
+```
+
+---
+
+## 6. MANEJO DE EVENTOS
+
+El sistema utiliza eventos onclick directamente en el HTML:
+
+```html
+<button onclick="processCesar('encrypt')">Cifrar</button>
+```
+
+Esta es una forma simple y directa de manejar eventos. En aplicaciones más
+complejas, se recomienda usar addEventListener desde JavaScript:
+
+```javascript
+document.getElementById('btnEncrypt').addEventListener('click', function() {
+    processCesar('encrypt');
+});
+```
+
+---
+
+## 7. VALIDACIONES Y SEGURIDAD
+
+### 7.1 Validación de Entrada
+```javascript
+if (!input) {
+    alert('Por favor ingresa un texto para procesar');
+    return;
+}
+```
+Previene procesamiento con campos vacíos.
+
+### 7.2 Validación de Conjunto de Caracteres
+```javascript
+if (!charset) {
+    alert('Por favor define un conjunto de caracteres');
+    return;
+}
+```
+Asegura que haya un conjunto válido para el cifrado.
+
+### 7.3 Manejo de Caracteres No Definidos
+```javascript
+if (index !== -1) {
+    // Procesar carácter
+} else {
+    result += char;  // Mantener sin cambios
+}
+```
+Los caracteres fuera del conjunto definido se preservan tal cual.
+
+### 7.4 Prevención de Desbordamiento
+```javascript
+let newIndex = (index + actualShift) % charsetLength;
+if (newIndex < 0) {
+    newIndex += charsetLength;
+}
+```
+La operación módulo previene índices fuera de rango. El manejo de negativos
+asegura que siempre obtengamos un índice válido.
+
+---
+
+## 8. OPTIMIZACIONES Y MEJORAS FUTURAS
+
+### 8.1 Optimizaciones Implementadas
+- Uso de operaciones matemáticas eficientes (módulo)
+- Procesamiento carácter por carácter sin cargar todo en memoria
+- CSS con transiciones para animaciones suaves
+- Responsive design para múltiples dispositivos
+
+### 8.2 Posibles Mejoras
+1. **Análisis de frecuencia**: Agregar herramienta para analizar frecuencias
+2. **Historial**: Guardar mensajes procesados anteriormente
+3. **Exportación**: Descargar resultados como archivo de texto
+4. **Modo oscuro**: Tema alternativo para preferencia del usuario
+5. **Criptoanálisis**: Herramienta automática para romper cifrados simples
+6. **Más métodos**: Agregar Vigenère, Playfair, Hill, etc.
+
+---
+
+## CONCLUSIÓN
+
+Este código implementa dos métodos históricos de criptografía de manera
+educativa y accesible. Aunque estos métodos no son seguros para uso real,
+proporcionan una excelente introducción a los conceptos fundamentales de
+la criptografía.
+
+La estructura modular y bien comentada facilita la comprensión y extensión
+del código para futuros desarrollos.
+
+---
+
+Documento generado: Febrero 2026
+Versión: 1.0.0
