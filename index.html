@@ -208,74 +208,62 @@
         <h1>Sistema de Cifrado</h1>
         <p class="subtitle">Metodos Cesar y Atbash</p>
 
-        <!-- Selector de metodo de cifrado -->
         <div class="method-selector">
             <button class="method-btn active" onclick="selectMethod('cesar')">Cifrado Cesar</button>
             <button class="method-btn" onclick="selectMethod('atbash')">Cifrado Atbash</button>
         </div>
 
-        <!-- Seccion del metodo Cesar -->
         <div id="cesarMethod">
             <div class="info-box">
                 <p><strong>Cifrado Cesar:</strong> Desplaza cada caracter un numero fijo de posiciones en el alfabeto definido.</p>
             </div>
 
             <div class="cesar-controls">
-                <!-- Campo para ingresar el desplazamiento -->
                 <div class="input-group">
                     <label for="cesarShift">Desplazamiento (clave):</label>
                     <input type="number" id="cesarShift" value="3" min="1" max="255">
                 </div>
-                <!-- Campo para definir el conjunto de caracteres -->
                 <div class="input-group">
                     <label for="cesarCharset">Conjunto de caracteres:</label>
                     <input type="text" id="cesarCharset" value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ,.;:!?">
                 </div>
             </div>
 
-            <!-- Area de texto para ingresar el mensaje -->
             <div class="input-group">
                 <label for="cesarInput">Texto a procesar:</label>
                 <textarea id="cesarInput" placeholder="Escribe aqui el mensaje..."></textarea>
             </div>
 
-            <!-- Botones para cifrar y descifrar -->
             <div class="action-buttons">
                 <button class="btn btn-encrypt" onclick="processCesar('encrypt')">Cifrar</button>
                 <button class="btn btn-decrypt" onclick="processCesar('decrypt')">Descifrar</button>
             </div>
 
-            <!-- Caja para mostrar el resultado -->
             <div id="cesarResult" class="result-box" style="display:none;">
                 <h3>Resultado:</h3>
                 <p class="result-text" id="cesarResultText"></p>
             </div>
         </div>
 
-        <!-- Seccion del metodo Atbash -->
         <div id="atbashMethod" style="display:none;">
             <div class="info-box">
                 <p><strong>Cifrado Atbash:</strong> Invierte el alfabeto, sustituyendo la primera letra por la ultima y viceversa.</p>
             </div>
 
-            <!-- Campo para definir el conjunto de caracteres -->
             <div class="input-group">
                 <label for="atbashCharset">Conjunto de caracteres:</label>
                 <input type="text" id="atbashCharset" value="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789">
             </div>
 
-            <!-- Area de texto para ingresar el mensaje -->
             <div class="input-group">
                 <label for="atbashInput">Texto a procesar:</label>
                 <textarea id="atbashInput" placeholder="Escribe aqui el mensaje..."></textarea>
             </div>
 
-            <!-- Boton para cifrar o descifrar -->
             <div class="action-buttons">
                 <button class="btn btn-encrypt" onclick="processAtbash()">Cifrar / Descifrar</button>
             </div>
 
-            <!-- Caja para mostrar el resultado -->
             <div id="atbashResult" class="result-box" style="display:none;">
                 <h3>Resultado:</h3>
                 <p class="result-text" id="atbashResultText"></p>
@@ -284,143 +272,103 @@
     </div>
 
     <script>
-        // Funcion para cambiar entre metodos de cifrado
+        // [FN-001]
         function selectMethod(method) {
-            // Obtener referencias a los botones
             const cesarBtn = document.querySelectorAll('.method-btn')[0];
             const atbashBtn = document.querySelectorAll('.method-btn')[1];
-            
-            // Obtener referencias a las secciones
             const cesarDiv = document.getElementById('cesarMethod');
             const atbashDiv = document.getElementById('atbashMethod');
 
-            // Verificar cual metodo fue seleccionado
             if (method === 'cesar') {
-                // Activar boton de Cesar y desactivar Atbash
                 cesarBtn.classList.add('active');
                 atbashBtn.classList.remove('active');
-                
-                // Mostrar seccion de Cesar y ocultar Atbash
                 cesarDiv.style.display = 'block';
                 atbashDiv.style.display = 'none';
             } else {
-                // Activar boton de Atbash y desactivar Cesar
                 atbashBtn.classList.add('active');
                 cesarBtn.classList.remove('active');
-                
-                // Mostrar seccion de Atbash y ocultar Cesar
                 atbashDiv.style.display = 'block';
                 cesarDiv.style.display = 'none';
             }
         }
 
-        // Funcion para procesar el cifrado Cesar
+        // [FN-002]
         function processCesar(mode) {
-            // Obtener el texto ingresado por el usuario
+            // [FN-002.1]
             const input = document.getElementById('cesarInput').value;
-            
-            // Obtener el valor de desplazamiento
             const shift = parseInt(document.getElementById('cesarShift').value);
-            
-            // Obtener el conjunto de caracteres definido
             const charset = document.getElementById('cesarCharset').value;
             
-            // Validar que se haya ingresado texto
+            // [FN-002.2]
             if (!input) {
                 alert('Por favor ingresa un texto para procesar');
                 return;
             }
-
-            // Validar que se haya definido un conjunto de caracteres
             if (!charset) {
                 alert('Por favor define un conjunto de caracteres');
                 return;
             }
 
-            // Inicializar la cadena de resultado
+            // [FN-002.3]
             let result = '';
-            
-            // Obtener la longitud del conjunto de caracteres
             const charsetLength = charset.length;
-            
-            // Determinar la direccion del desplazamiento segun el modo
             const actualShift = mode === 'encrypt' ? shift : -shift;
 
-            // Procesar cada caracter del texto
+            // [FN-002.4]
             for (let i = 0; i < input.length; i++) {
                 const char = input[i];
-                
-                // Buscar la posicion del caracter en el conjunto
                 const index = charset.indexOf(char);
 
                 if (index !== -1) {
-                    // El caracter esta en el conjunto, aplicar desplazamiento
                     let newIndex = (index + actualShift) % charsetLength;
-                    
-                    // Manejar indices negativos para descifrado
                     if (newIndex < 0) {
                         newIndex += charsetLength;
                     }
-                    
-                    // Agregar el caracter desplazado al resultado
                     result += charset[newIndex];
                 } else {
-                    // El caracter no esta en el conjunto, mantenerlo sin cambios
                     result += char;
                 }
             }
 
-            // Mostrar el resultado en la interfaz
+            // [FN-002.5]
             document.getElementById('cesarResultText').textContent = result;
             document.getElementById('cesarResult').style.display = 'block';
         }
 
-        // Funcion para procesar el cifrado Atbash
+        // [FN-003]
         function processAtbash() {
-            // Obtener el texto ingresado por el usuario
+            // [FN-003.1]
             const input = document.getElementById('atbashInput').value;
-            
-            // Obtener el conjunto de caracteres definido
             const charset = document.getElementById('atbashCharset').value;
 
-            // Validar que se haya ingresado texto
+            // [FN-003.2]
             if (!input) {
                 alert('Por favor ingresa un texto para procesar');
                 return;
             }
-
-            // Validar que se haya definido un conjunto de caracteres
             if (!charset) {
                 alert('Por favor define un conjunto de caracteres');
                 return;
             }
 
-            // Inicializar la cadena de resultado
+            // [FN-003.3]
             let result = '';
-            
-            // Obtener la longitud del conjunto de caracteres
             const charsetLength = charset.length;
 
-            // Procesar cada caracter del texto
+            // [FN-003.4]
             for (let i = 0; i < input.length; i++) {
                 const char = input[i];
-                
-                // Buscar la posicion del caracter en el conjunto
                 const index = charset.indexOf(char);
 
                 if (index !== -1) {
-                    // El caracter esta en el conjunto, calcular posicion invertida
                     const reversedIndex = charsetLength - 1 - index;
-                    
-                    // Agregar el caracter invertido al resultado
                     result += charset[reversedIndex];
                 } else {
-                    // El caracter no esta en el conjunto, mantenerlo sin cambios
                     result += char;
                 }
             }
 
-            // Mostrar el resultado en la interfaz
+            // [FN-003.5]
             document.getElementById('atbashResultText').textContent = result;
             document.getElementById('atbashResult').style.display = 'block';
         }
