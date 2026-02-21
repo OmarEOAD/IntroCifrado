@@ -24,7 +24,7 @@ Componentes principales:
 - CSS: Presentación visual.
 - JavaScript: Lógica de negocio.
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 2. ESTRUCTURA DEL CÓDIGO
 El archivo index.html contiene tres secciones principales:
@@ -44,13 +44,13 @@ Componentes principales:
 - Líneas 248-271: Formulario Atbash (campos de entrada + botones).
 - Líneas 242-245, 267-270: Áreas de resultado.
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 3. ESTILOS CSS
 Ubicación: Líneas 7-204
 Contenido: Definición de estilos visuales, diseño responsive y animaciones.
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 4. FUNCIONES JAVASCRIPT
 El código contiene 3 funciones principales ubicadas en la sección <script>.
@@ -292,7 +292,7 @@ SUBÍNDICES EN EL CÓDIGO:
 [FN-003.4] Procesamiento         - Líneas 358-369
 [FN-003.5] Visualización         - Líneas 371-373
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 5. UBICACIÓN DE FUNCIONES EN EL CÓDIGO
 
@@ -319,7 +319,7 @@ SUBÍNDICES EN EL CÓDIGO:
 │   [FN-003.5]         │ 371-373     │ └─ Visualización                      │
 └──────────────────────┴─────────────┴───────────────────────────────────────┘
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 6. ALGORITMOS MATEMÁTICOS
 6.1 Cifrado César - Fórmula General
@@ -389,7 +389,7 @@ Implementación en el código (Línea 364):
 
 const reversedIndex = charsetLength - 1 - index;
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
 
 7. NOTAS TÉCNICAS ADICIONALES
 
@@ -411,4 +411,4 @@ La operación módulo previente desbordamiento del conjunto:
 - Si el índice >= longitud: regresa al inicio.
 - Si el índice < 0: ajusta sumando la longitud.
 
-═══════════════════════════════════════════════════════════════════════════════
+===============================================================================
