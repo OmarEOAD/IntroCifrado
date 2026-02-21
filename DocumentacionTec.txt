@@ -1,562 +1,414 @@
-# DOCUMENTACIÓN TÉCNICA DEL CÓDIGO
-# Sistema de Cifrado César y Atbash
+DOCUMENTACIÓN TÉCNICA
+Sistema de Cifrado César y Atbash
 
-## ÍNDICE
-1. Arquitectura General
-2. Estructura HTML
-3. Estilos CSS
-4. Lógica JavaScript
-5. Algoritmos de Cifrado
-6. Funciones Auxiliares
-7. Manejo de Eventos
-8. Validaciones y Seguridad
+ÍNDICE GENERAL
+1. Arquitectura General.
+2. Estructura del Código.
+3. Estilos CSS.
+4. Funciones JavaScript
+   4.1 [FN-001] selectMethod() - Selector de método de cifrado.
+   4.2 [FN-002] processCesar() - Procesamiento de cifrado César.
+   4.3 [FN-003] processAtbash() - Procesamiento de cifrado Atbash.
+5. Ubicación de Funciones en el Código.
+6. Algoritmos Matemáticos.
 
----
+===============================================================================
 
-## 1. ARQUITECTURA GENERAL
-
+1. ARQUITECTURA GENERAL
 El sistema está implementado como una Single Page Application (SPA) que funciona
 completamente del lado del cliente. No requiere servidor ni conexión a internet
 una vez cargado.
 
 Componentes principales:
-- HTML: Estructura y contenido
-- CSS: Presentación visual
-- JavaScript: Lógica de negocio
+- HTML: Estructura y contenido.
+- CSS: Presentación visual.
+- JavaScript: Lógica de negocio.
 
----
+═══════════════════════════════════════════════════════════════════════════════
 
-## 2. ESTRUCTURA HTML
+2. ESTRUCTURA DEL CÓDIGO
+El archivo index.html contiene tres secciones principales:
 
-### 2.1 Contenedor Principal
-```html
-<div class="container">
-```
-Contenedor que centraliza toda la aplicación. Aplica estilos de tarjeta con
-sombra y bordes redondeados.
+┌─────────────────────────────────────────────────────────────────────────┐
+│ LÍNEAS 1-6:     Declaración HTML y metadatos                            │
+│ LÍNEAS 7-204:   Estilos CSS (ver sección 3)                             │
+│ LÍNEAS 206-272: Estructura HTML del formulario                          │
+│ LÍNEAS 274-375: Funciones JavaScript (ver sección 4)                    │
+└─────────────────────────────────────────────────────────────────────────┘
 
-### 2.2 Encabezado
-```html
-<h1>Sistema de Cifrado Clásico</h1>
-<p class="subtitle">Métodos César y Atbash con ASCII personalizable</p>
-```
-Título principal con icono de candado y subtítulo explicativo.
+2.1 Sección HTML (Líneas 206-272)
+Componentes principales:
+- Línea 207: Contenedor principal (.container).
+- Líneas 211-214: Selector de método (botones César/Atbash).
+- Líneas 216-246: Formulario César (campos de entrada + botones).
+- Líneas 248-271: Formulario Atbash (campos de entrada + botones).
+- Líneas 242-245, 267-270: Áreas de resultado.
 
-### 2.3 Selector de Método
-```html
-<div class="method-selector">
-    <button class="method-btn active" onclick="selectMethod('cesar')">
-        Cifrado César
-    </button>
-    <button class="method-btn" onclick="selectMethod('atbash')">
-        Cifrado Atbash
-    </button>
-</div>
-```
-Botones para alternar entre los dos métodos de cifrado. El botón activo
-se marca con la clase "active" que cambia su apariencia visual.
+═══════════════════════════════════════════════════════════════════════════════
 
-### 2.4 Controles del Cifrado César
-```html
-<div id="cesarMethod">
-    <!-- Caja de información -->
-    <div class="info-box">
-        <p>Explicación del método</p>
-    </div>
+3. ESTILOS CSS
+Ubicación: Líneas 7-204
+Contenido: Definición de estilos visuales, diseño responsive y animaciones.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+4. FUNCIONES JAVASCRIPT
+El código contiene 3 funciones principales ubicadas en la sección <script>.
+
+───────────────────────────────────────────────────────────────────────────────
+[FN-001] FUNCIÓN: selectMethod(method)
+───────────────────────────────────────────────────────────────────────────────
+
+UBICACIÓN EN EL CÓDIGO: Líneas 275-293
+
+PROPÓSITO:
+Permite al usuario alternar entre el método de cifrado César y Atbash,
+mostrando u ocultando los controles correspondientes.
+
+PARÁMETROS:
+- method (string): 'cesar' o 'atbash'.
+
+FUNCIONAMIENTO:
+1. Obtiene referencias a los botones de selección (líneas 277-278).
+2. Obtiene referencias a las secciones de cada método (líneas 279-280).
+3. Verifica qué método fue seleccionado (línea 282).
+4. Actualiza clases CSS para activar/desactivar botones (líneas 283-284 o 288-289).
+5. Muestra la sección seleccionada y oculta la otra (líneas 285-286 o 290-291).
+
+PSEUDOCÓDIGO:
+INICIO selectMethod(method)
+    obtener referencias a botones César y Atbash
+    obtener referencias a secciones César y Atbash
     
-    <!-- Controles de configuración -->
-    <div class="cesar-controls">
-        <input type="number" id="cesarShift">
-        <input type="text" id="cesarCharset">
-    </div>
+    SI method == 'cesar' ENTONCES
+        activar botón César
+        desactivar botón Atbash
+        mostrar sección César
+        ocultar sección Atbash
+    SINO
+        activar botón Atbash
+        desactivar botón César
+        mostrar sección Atbash
+        ocultar sección César
+    FIN SI
+FIN
+
+EJEMPLO DE USO:
+selectMethod('cesar')  // Muestra el formulario de César
+
+───────────────────────────────────────────────────────────────────────────────
+[FN-002] FUNCIÓN: processCesar(mode)
+───────────────────────────────────────────────────────────────────────────────
+
+UBICACIÓN EN EL CÓDIGO: Líneas 295-336
+
+PROPÓSITO:
+Procesa el texto ingresado aplicando el algoritmo de cifrado César con
+desplazamiento configurable.
+
+PARÁMETROS:
+- mode (string): 'encrypt' para cifrar o 'decrypt' para descifrar.
+
+FUNCIONAMIENTO:
+1. Captura de datos desde los campos de entrada
+   - Texto a procesar.
+   - Valor de desplazamiento.
+   - Conjunto de caracteres.
+   
+2. Validación de datos
+   - Verifica que el texto no esté vacío.
+   - Verifica que el conjunto de caracteres esté definido.
+   
+3. Determinación de dirección
+   - Si mode='encrypt': desplazamiento positivo.
+   - Si mode='decrypt': desplazamiento negativo.
+   
+4. Procesamiento carácter por carácter
+   - Busca posición del carácter en el conjunto.
+   - Aplica desplazamiento con operación módulo.
+   - Maneja desbordamiento circular.
+   - Caracteres fuera del conjunto se mantienen iguales.
+   
+5. Visualización del resultado
+
+ALGORITMO MATEMÁTICO:
+Para cifrar:   nueva_posicion = (posicion + desplazamiento) mod longitud
+Para descifrar: nueva_posicion = (posicion - desplazamiento) mod longitud
+
+
+PSEUDOCÓDIGO:
+INICIO processCesar(mode)
+    // [FN-002.1] Captura de datos
+    texto = obtener valor de cesarInput
+    desplazamiento = obtener valor de cesarShift
+    conjunto = obtener valor de cesarCharset
     
-    <!-- Área de texto -->
-    <textarea id="cesarInput"></textarea>
+    // [FN-002.2] Validaciones
+    SI texto está vacío ENTONCES
+        mostrar alerta "ingresa un texto"
+        RETORNAR
+    FIN SI
     
-    <!-- Botones de acción -->
-    <div class="action-buttons">
-        <button onclick="processCesar('encrypt')">Cifrar</button>
-        <button onclick="processCesar('decrypt')">Descifrar</button>
-    </div>
+    SI conjunto está vacío ENTONCES
+        mostrar alerta "define un conjunto"
+        RETORNAR
+    FIN SI
     
-    <!-- Área de resultados -->
-    <div id="cesarResult" class="result-box">
-        <h3>Resultado:</h3>
-        <p id="cesarResultText"></p>
-    </div>
-</div>
-```
-
-Elementos clave:
-- cesarShift: Campo numérico para el desplazamiento
-- cesarCharset: Conjunto de caracteres personalizable
-- cesarInput: Área donde se ingresa el texto a procesar
-- cesarResult: Contenedor que muestra el resultado
-
-### 2.5 Controles del Cifrado Atbash
-```html
-<div id="atbashMethod" style="display:none;">
-    <div class="info-box">
-        <p>Explicación del método</p>
-    </div>
+    // [FN-002.3] Inicialización
+    resultado = ""
+    longitud_conjunto = longitud de conjunto
     
-    <input type="text" id="atbashCharset">
-    <textarea id="atbashInput"></textarea>
+    SI mode == 'encrypt' ENTONCES
+        desplazamiento_real = desplazamiento
+    SINO
+        desplazamiento_real = -desplazamiento
+    FIN SI
     
-    <div class="action-buttons">
-        <button onclick="processAtbash()">Cifrar / Descifrar</button>
-    </div>
+    // [FN-002.4] Procesamiento
+    PARA cada caracter en texto HACER
+        posicion = buscar caracter en conjunto
+        
+        SI posicion encontrada ENTONCES
+            nueva_posicion = (posicion + desplazamiento_real) mod longitud_conjunto
+            
+            SI nueva_posicion < 0 ENTONCES
+                nueva_posicion = nueva_posicion + longitud_conjunto
+            FIN SI
+            
+            resultado = resultado + conjunto[nueva_posicion]
+        SINO
+            resultado = resultado + caracter
+        FIN SI
+    FIN PARA
     
-    <div id="atbashResult" class="result-box">
-        <h3>Resultado:</h3>
-        <p id="atbashResultText"></p>
-    </div>
-</div>
-```
+    // [FN-002.5] Mostrar resultado
+    mostrar resultado en cesarResultText
+    hacer visible cesarResult
+FIN
 
-Nota: Atbash solo tiene un botón porque cifrar y descifrar son la misma operación.
 
----
+EJEMPLO DE USO:
+Input: "HOLA", desplazamiento: 3, conjunto: "ABCD...XYZ"
+processCesar('encrypt')
+Output: "KROD"
 
-## 3. ESTILOS CSS
+SUBÍNDICES EN EL CÓDIGO:
+[FN-002.1] Captura de datos      - Líneas 297-300
+[FN-002.2] Validaciones          - Líneas 302-310
+[FN-002.3] Inicialización        - Líneas 312-315
+[FN-002.4] Procesamiento         - Líneas 317-331
+[FN-002.5] Visualización         - Líneas 333-335
 
-### 3.1 Reset y Box-Sizing
-```css
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-```
-Elimina márgenes y padding por defecto. box-sizing: border-box hace que
-el ancho incluya padding y border.
+───────────────────────────────────────────────────────────────────────────────
+[FN-003] FUNCIÓN: processAtbash()
+───────────────────────────────────────────────────────────────────────────────
 
-### 3.2 Body y Fondo
-```css
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-}
-```
-- Gradiente de fondo de púrpura a violeta
-- Flexbox para centrar el contenido vertical y horizontalmente
-- min-height: 100vh asegura que ocupe toda la altura de la ventana
+UBICACIÓN EN EL CÓDIGO: Líneas 338-374
 
-### 3.3 Contenedor Principal
-```css
-.container {
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    max-width: 800px;
-    width: 100%;
-    padding: 40px;
-}
-```
-- Fondo blanco para contraste
-- Bordes redondeados y sombra para efecto de elevación
-- max-width: 800px mantiene legibilidad
-- padding: 40px crea espacio interno
+PROPÓSITO:
+Procesa el texto aplicando el algoritmo de cifrado Atbash, que invierte
+el alfabeto sustituyendo cada carácter por su opuesto en el conjunto.
 
-### 3.4 Botones de Método
-```css
-.method-btn {
-    padding: 12px 30px;
-    border: 2px solid #667eea;
-    background: white;
-    color: #667eea;
-    border-radius: 25px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: bold;
-    transition: all 0.3s ease;
-}
+PARÁMETROS:
+- Ninguno (obtiene datos directamente del DOM).
 
-.method-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
-}
+FUNCIONAMIENTO:
+1. Captura de datos desde los campos de entrada
+   - Texto a procesar.
+   - Conjunto de caracteres.
+   
+2. Validación de datos
+   - Verifica que el texto no esté vacío.
+   - Verifica que el conjunto esté definido.
+   
+3. Procesamiento carácter por carácter
+   - Busca posición del carácter en el conjunto.
+   - Calcula posición invertida: (longitud - 1 - posición).
+   - Sustituye por el carácter en la posición invertida.
+   - Caracteres fuera del conjunto se mantienen iguales.
+   
+4. Visualización del resultado
 
-.method-btn.active {
-    background: #667eea;
-    color: white;
-}
-```
-- Estado normal: Borde de color, fondo blanco
-- Hover: Se eleva ligeramente con sombra
-- Active: Fondo de color, texto blanco (inversión)
-- transition: Animaciones suaves en todos los cambios
+ALGORITMO MATEMÁTICO:
+posicion_invertida = (longitud_conjunto - 1) - posicion_original
 
-### 3.5 Campos de Entrada
-```css
-textarea, input[type="text"], input[type="number"] {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: border-color 0.3s ease;
-    font-family: 'Courier New', monospace;
-}
+Ejemplo con conjunto de 26 letras:
+A (pos 0)  → Z (pos 25): 25 - 0 = 25
+B (pos 1)  → Y (pos 24): 25 - 1 = 24
+Z (pos 25) → A (pos 0):  25 - 25 = 0
 
-textarea:focus, input:focus {
-    outline: none;
-    border-color: #667eea;
-}
-```
-- Fuente monoespaciada para texto cifrado
-- Borde gris por defecto
-- Focus: Borde azul y sin outline por defecto del navegador
 
-### 3.6 Botones de Acción
-```css
-.btn-encrypt {
-    background: #667eea;
-    color: white;
-}
-
-.btn-encrypt:hover {
-    background: #5568d3;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
-}
-
-.btn-decrypt {
-    background: #764ba2;
-    color: white;
-}
-```
-- Colores diferenciados para cifrar (azul) y descifrar (púrpura)
-- Efectos hover consistentes con elevación
-
-### 3.7 Diseño Responsive
-```css
-@media (max-width: 600px) {
-    .container {
-        padding: 20px;
-    }
+PSEUDOCÓDIGO:
+INICIO processAtbash()
+    // [FN-003.1] Captura de datos
+    texto = obtener valor de atbashInput
+    conjunto = obtener valor de atbashCharset
     
-    .method-selector {
-        flex-direction: column;
-    }
+    // [FN-003.2] Validaciones
+    SI texto está vacío ENTONCES
+        mostrar alerta "ingresa un texto"
+        RETORNAR
+    FIN SI
     
-    .cesar-controls {
-        grid-template-columns: 1fr;
-    }
+    SI conjunto está vacío ENTONCES
+        mostrar alerta "define un conjunto"
+        RETORNAR
+    FIN SI
     
-    .action-buttons {
-        flex-direction: column;
-    }
-}
-```
-En pantallas pequeñas:
-- Reduce el padding
-- Cambia botones y controles a disposición vertical
-- Mejora usabilidad en móviles
-
----
-
-## 4. LÓGICA JAVASCRIPT
-
-### 4.1 Función selectMethod(method)
-```javascript
-function selectMethod(method) {
-    const cesarBtn = document.querySelectorAll('.method-btn')[0];
-    const atbashBtn = document.querySelectorAll('.method-btn')[1];
-    const cesarDiv = document.getElementById('cesarMethod');
-    const atbashDiv = document.getElementById('atbashMethod');
-
-    if (method === 'cesar') {
-        cesarBtn.classList.add('active');
-        atbashBtn.classList.remove('active');
-        cesarDiv.style.display = 'block';
-        atbashDiv.style.display = 'none';
-    } else {
-        atbashBtn.classList.add('active');
-        cesarBtn.classList.remove('active');
-        atbashDiv.style.display = 'block';
-        cesarDiv.style.display = 'none';
-    }
-}
-```
-
-Funcionamiento:
-1. Obtiene referencias a los botones y secciones
-2. Según el método seleccionado:
-   - Marca el botón correspondiente como activo
-   - Muestra la sección correspondiente
-   - Oculta la otra sección
-
-### 4.2 Función processCesar(mode)
-```javascript
-function processCesar(mode) {
-    // Obtener valores de entrada
-    const input = document.getElementById('cesarInput').value;
-    const shift = parseInt(document.getElementById('cesarShift').value);
-    const charset = document.getElementById('cesarCharset').value;
+    // [FN-003.3] Inicialización
+    resultado = ""
+    longitud_conjunto = longitud de conjunto
     
-    // Validaciones
-    if (!input) {
-        alert('Por favor ingresa un texto para procesar');
-        return;
-    }
+    // [FN-003.4] Procesamiento
+    PARA cada caracter en texto HACER
+        posicion = buscar caracter en conjunto
+        
+        SI posicion encontrada ENTONCES
+            posicion_invertida = (longitud_conjunto - 1) - posicion
+            resultado = resultado + conjunto[posicion_invertida]
+        SINO
+            resultado = resultado + caracter
+        FIN SI
+    FIN PARA
+    
+    // [FN-003.5] Mostrar resultado
+    mostrar resultado en atbashResultText
+    hacer visible atbashResult
+FIN
 
-    if (!charset) {
-        alert('Por favor define un conjunto de caracteres');
-        return;
-    }
+EJEMPLO DE USO:
+Input: "HOLA", conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+processAtbash()
+Output: "SLOZ"
 
-    // Inicializar variables
-    let result = '';
-    const charsetLength = charset.length;
-    const actualShift = mode === 'encrypt' ? shift : -shift;
+CARACTERÍSTICA ESPECIAL:
+Atbash es simétrico, aplicarlo dos veces devuelve el original:
+"HOLA" → "SLOZ" → "HOLA"
 
-    // Procesar cada carácter
-    for (let i = 0; i < input.length; i++) {
-        const char = input[i];
-        const index = charset.indexOf(char);
+SUBÍNDICES EN EL CÓDIGO:
+[FN-003.1] Captura de datos      - Líneas 340-342
+[FN-003.2] Validaciones          - Líneas 344-352
+[FN-003.3] Inicialización        - Líneas 354-356
+[FN-003.4] Procesamiento         - Líneas 358-369
+[FN-003.5] Visualización         - Líneas 371-373
 
-        if (index !== -1) {
-            // El carácter está en el conjunto
-            let newIndex = (index + actualShift) % charsetLength;
-            if (newIndex < 0) {
-                newIndex += charsetLength;
-            }
-            result += charset[newIndex];
-        } else {
-            // El carácter no está en el conjunto, mantenerlo sin cambios
-            result += char;
-        }
-    }
+═══════════════════════════════════════════════════════════════════════════════
 
-    // Mostrar resultado
-    document.getElementById('cesarResultText').textContent = result;
-    document.getElementById('cesarResult').style.display = 'block';
-}
-```
+5. UBICACIÓN DE FUNCIONES EN EL CÓDIGO
 
-Desglose del algoritmo:
-1. **Captura de datos**: Lee el texto, desplazamiento y conjunto de caracteres
-2. **Validación**: Verifica que los campos necesarios tengan valores
-3. **Determinación de dirección**: Si es cifrado, usa shift positivo; si es
-   descifrado, usa shift negativo
-4. **Iteración**: Recorre cada carácter del texto:
-   - Busca su posición en el conjunto
-   - Si está: calcula nueva posición con (posición + shift) % longitud
-   - Si no está: lo deja sin cambios
-5. **Manejo de negativos**: Si el índice es negativo (al descifrar), suma
-   la longitud del conjunto para obtener el valor correcto
-6. **Visualización**: Muestra el resultado y hace visible la caja de resultados
+┌──────────────────────┬─────────────┬───────────────────────────────────────┐
+│ Función              │ Líneas      │ Descripción                           │
+├──────────────────────┼─────────────┼───────────────────────────────────────┤
+│ [FN-001]             │ 275-293     │ Selector de método                    │
+│ selectMethod()       │             │                                       │
+├──────────────────────┼─────────────┼───────────────────────────────────────┤
+│ [FN-002]             │ 295-336     │ Cifrado/Descifrado César              │
+│ processCesar()       │             │                                       │
+│   [FN-002.1]         │ 297-300     │ └─ Captura de datos                   │
+│   [FN-002.2]         │ 302-310     │ └─ Validaciones                       │
+│   [FN-002.3]         │ 312-315     │ └─ Inicialización                     │
+│   [FN-002.4]         │ 317-331     │ └─ Procesamiento                      │
+│   [FN-002.5]         │ 333-335     │ └─ Visualización                      │
+├──────────────────────┼─────────────┼───────────────────────────────────────┤
+│ [FN-003]             │ 338-374     │ Cifrado/Descifrado Atbash             │
+│ processAtbash()      │             │                                       │
+│   [FN-003.1]         │ 340-342     │ └─ Captura de datos                   │
+│   [FN-003.2]         │ 344-352     │ └─ Validaciones                       │
+│   [FN-003.3]         │ 354-356     │ └─ Inicialización                     │
+│   [FN-003.4]         │ 358-369     │ └─ Procesamiento                      │
+│   [FN-003.5]         │ 371-373     │ └─ Visualización                      │
+└──────────────────────┴─────────────┴───────────────────────────────────────┘
 
-### 4.3 Función processAtbash()
-```javascript
-function processAtbash() {
-    const input = document.getElementById('atbashInput').value;
-    const charset = document.getElementById('atbashCharset').value;
+═══════════════════════════════════════════════════════════════════════════════
 
-    if (!input) {
-        alert('Por favor ingresa un texto para procesar');
-        return;
-    }
+6. ALGORITMOS MATEMÁTICOS
+6.1 Cifrado César - Fórmula General
 
-    if (!charset) {
-        alert('Por favor define un conjunto de caracteres');
-        return;
-    }
-
-    let result = '';
-    const charsetLength = charset.length;
-
-    for (let i = 0; i < input.length; i++) {
-        const char = input[i];
-        const index = charset.indexOf(char);
-
-        if (index !== -1) {
-            const reversedIndex = charsetLength - 1 - index;
-            result += charset[reversedIndex];
-        } else {
-            result += char;
-        }
-    }
-
-    document.getElementById('atbashResultText').textContent = result;
-    document.getElementById('atbashResult').style.display = 'block';
-}
-```
-
-Algoritmo Atbash:
-1. **Captura y validación**: Similar a César
-2. **Cálculo de inversión**: Para cada carácter:
-   - Encuentra su posición en el conjunto
-   - Calcula posición invertida: (longitud - 1 - posición)
-   - Ejemplo: Si charset tiene 26 letras y el carácter está en posición 0,
-     la posición invertida es 25
-3. **Simetría**: Como la inversión es simétrica, aplicar Atbash dos veces
-   devuelve el texto original
-
----
-
-## 5. ALGORITMOS DE CIFRADO
-
-### 5.1 Cifrado César - Explicación Matemática
-
-Fórmula general:
-```
-Para cifrar:   E(x) = (x + k) mod n
-Para descifrar: D(x) = (x - k) mod n
+Para un conjunto de caracteres de longitud n:
+CIFRAR:   E(x) = (x + k) mod n
+DESCIFRAR: D(x) = (x - k) mod n
 
 Donde:
-- x: posición del carácter en el conjunto
-- k: clave (desplazamiento)
-- n: tamaño del conjunto
-- mod: operación módulo (resto de la división)
-```
+  x = posición del carácter en el conjunto (0 a n-1)
+  k = clave de desplazamiento
+  n = tamaño del conjunto de caracteres
+  mod = operación módulo (resto de la división)
 
-Ejemplo paso a paso:
-```
+Ejemplo detallado:
 Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 n = 26
 k = 3
 
 Cifrar "HOLA":
-- H está en posición 7: (7 + 3) mod 26 = 10 → K
-- O está en posición 14: (14 + 3) mod 26 = 17 → R
-- L está en posición 11: (11 + 3) mod 26 = 14 → O
-- A está en posición 0: (0 + 3) mod 26 = 3 → D
+  H → posición 7:  (7 + 3) mod 26 = 10 → K
+  O → posición 14: (14 + 3) mod 26 = 17 → R
+  L → posición 11: (11 + 3) mod 26 = 14 → O
+  A → posición 0:  (0 + 3) mod 26 = 3 → D
 
 Resultado: "KROD"
-```
 
-### 5.2 Cifrado Atbash - Explicación Matemática
+Implementación en el código (Línea 323):
 
-Fórmula:
-```
+let newIndex = (index + actualShift) % charsetLength;
+
+Manejo de índices negativos al descifrar (Líneas 324-326):
+
+if (newIndex < 0) {
+    newIndex += charsetLength;
+}
+
+6.2 Cifrado Atbash - Fórmula General
 E(x) = D(x) = (n - 1) - x
 
 Donde:
-- x: posición del carácter en el conjunto
-- n: tamaño del conjunto
-```
+  x = posición del carácter en el conjunto
+  n = tamaño del conjunto
 
-Ejemplo:
-```
+Ejemplo detallado:
+
 Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 n = 26
 
 Cifrar "HOLA":
-- H está en posición 7: (26-1) - 7 = 18 → S
-- O está en posición 14: (26-1) - 14 = 11 → L
-- L está en posición 11: (26-1) - 11 = 14 → O
-- A está en posición 0: (26-1) - 0 = 25 → Z
+  H → posición 7:  (26-1) - 7 = 18 → S
+  O → posición 14: (26-1) - 14 = 11 → L
+  L → posición 11: (26-1) - 11 = 14 → O
+  A → posición 0:  (26-1) - 0 = 25 → Z
 
 Resultado: "SLOZ"
 
-Descifrar "SLOZ":
-- S está en posición 18: (26-1) - 18 = 7 → H
-- L está en posición 11: (26-1) - 11 = 14 → O
-- O está en posición 14: (26-1) - 14 = 11 → L
-- Z está en posición 25: (26-1) - 25 = 0 → A
+Descifrar "SLOZ" (la misma operación):
+  S → posición 18: (26-1) - 18 = 7 → H
+  L → posición 11: (26-1) - 11 = 14 → O
+  O → posición 14: (26-1) - 14 = 11 → L
+  Z → posición 25: (26-1) - 25 = 0 → A
 
 Resultado: "HOLA"
-```
 
----
+Implementación en el código (Línea 364):
 
-## 6. MANEJO DE EVENTOS
+const reversedIndex = charsetLength - 1 - index;
 
-El sistema utiliza eventos onclick directamente en el HTML:
+═══════════════════════════════════════════════════════════════════════════════
 
-```html
-<button onclick="processCesar('encrypt')">Cifrar</button>
-```
+7. NOTAS TÉCNICAS ADICIONALES
 
-Esta es una forma simple y directa de manejar eventos. En aplicaciones más
-complejas, se recomienda usar addEventListener desde JavaScript:
+Manejo de Caracteres Especiales
+Los caracteres que no están en el conjunto definido permanecen sin cambios.
+Esto permite cifrar texto con puntuación sin alterar los signos.
 
-```javascript
-document.getElementById('btnEncrypt').addEventListener('click', function() {
-    processCesar('encrypt');
-});
-```
+Implementación:
+- César: Líneas 322-330
+- Atbash: Líneas 363-368
 
----
+Validaciones Implementadas
+- Verificación de campos vacíos antes de procesar.
+- Alertas informativas al usuario.
+- Manejo de índices negativos en descifrado César.
 
-## 7. VALIDACIONES Y SEGURIDAD
+Operación Módulo
+La operación módulo previente desbordamiento del conjunto:
+- Si el índice >= longitud: regresa al inicio.
+- Si el índice < 0: ajusta sumando la longitud.
 
-### 7.1 Validación de Entrada
-```javascript
-if (!input) {
-    alert('Por favor ingresa un texto para procesar');
-    return;
-}
-```
-Previene procesamiento con campos vacíos.
-
-### 7.2 Validación de Conjunto de Caracteres
-```javascript
-if (!charset) {
-    alert('Por favor define un conjunto de caracteres');
-    return;
-}
-```
-Asegura que haya un conjunto válido para el cifrado.
-
-### 7.3 Manejo de Caracteres No Definidos
-```javascript
-if (index !== -1) {
-    // Procesar carácter
-} else {
-    result += char;  // Mantener sin cambios
-}
-```
-Los caracteres fuera del conjunto definido se preservan tal cual.
-
-### 7.4 Prevención de Desbordamiento
-```javascript
-let newIndex = (index + actualShift) % charsetLength;
-if (newIndex < 0) {
-    newIndex += charsetLength;
-}
-```
-La operación módulo previene índices fuera de rango. El manejo de negativos
-asegura que siempre obtengamos un índice válido.
-
----
-
-## 8. OPTIMIZACIONES Y MEJORAS FUTURAS
-
-### 8.1 Optimizaciones Implementadas
-- Uso de operaciones matemáticas eficientes (módulo)
-- Procesamiento carácter por carácter sin cargar todo en memoria
-- CSS con transiciones para animaciones suaves
-- Responsive design para múltiples dispositivos
-
-### 8.2 Posibles Mejoras
-1. **Análisis de frecuencia**: Agregar herramienta para analizar frecuencias
-2. **Historial**: Guardar mensajes procesados anteriormente
-3. **Exportación**: Descargar resultados como archivo de texto
-4. **Modo oscuro**: Tema alternativo para preferencia del usuario
-5. **Criptoanálisis**: Herramienta automática para romper cifrados simples
-6. **Más métodos**: Agregar Vigenère, Playfair, Hill, etc.
-
----
-
-## CONCLUSIÓN
-
-Este código implementa dos métodos históricos de criptografía de manera
-educativa y accesible. Aunque estos métodos no son seguros para uso real,
-proporcionan una excelente introducción a los conceptos fundamentales de
-la criptografía.
-
-La estructura modular y bien comentada facilita la comprensión y extensión
-del código para futuros desarrollos.
-
----
-
-Documento generado: Febrero 2026
-Versión: 1.0.0
+═══════════════════════════════════════════════════════════════════════════════
