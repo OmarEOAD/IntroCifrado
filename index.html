@@ -184,6 +184,23 @@
             line-height: 1.5;
         }
 
+        .auto-info {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            border-left: 4px solid #f39c12;
+        }
+
+        .auto-info strong {
+            color: #856404;
+        }
+
+        .auto-info span {
+            color: #856404;
+            font-size: 0.9em;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -206,7 +223,7 @@
 <body>
     <div class="container">
         <h1>Sistema de Cifrado</h1>
-        <p class="subtitle">Metodos Cesar y Atbash</p>
+        <p class="subtitle">Metodos Cesar y Atbash con deteccion automatica</p>
 
         <div class="method-selector">
             <button class="method-btn active" onclick="selectMethod('cesar')">Cifrado Cesar</button>
@@ -296,7 +313,7 @@
         function processCesar(mode) {
             // [FN-002.1]
             const input = document.getElementById('cesarInput').value;
-            const shift = parseInt(document.getElementById('cesarShift').value);
+            let shift = parseInt(document.getElementById('cesarShift').value);
             const charset = document.getElementById('cesarCharset').value;
             
             // [FN-002.2]
@@ -307,6 +324,21 @@
             if (!charset) {
                 alert('Por favor define un conjunto de caracteres');
                 return;
+            }
+
+            let autoDetected = false;
+            let detectedShift = shift;
+            let matchCount = 0;
+
+            if (mode === 'decrypt') {
+                const detectionResult = autoDetectShift(input, charset);
+                if (detectionResult.found) {
+                    shift = detectionResult.shift;
+                    detectedShift = shift;
+                    matchCount = detectionResult.matches;
+                    autoDetected = true;
+                    document.getElementById('cesarShift').value = shift;
+                }
             }
 
             // [FN-002.3]
@@ -331,8 +363,80 @@
             }
 
             // [FN-002.5]
-            document.getElementById('cesarResultText').textContent = result;
+            if (autoDetected) {
+                document.getElementById('cesarResultText').innerHTML = 
+                    `<div class="auto-info">
+                        <strong>Desplazamiento detectado automaticamente: ${detectedShift}</strong><br>
+                        <span>Coincidencias encontradas: ${matchCount} palabras comunes</span>
+                    </div>
+                    ${result}`;
+            } else {
+                document.getElementById('cesarResultText').textContent = result;
+            }
             document.getElementById('cesarResult').style.display = 'block';
+        }
+
+        // [FN-004]
+        function autoDetectShift(input, charset) {
+            const palabrasComunes = [
+                'el ', 'la ', 'de ', 'que ', 'un ', 'es ', 'en ', 'los ', 'las ', 
+                'del ', 'para ', 'con ', 'por ', 'una ', 'este ', 'esta ', 'como ', 
+                'mas ', 'pero ', 'sus ', 'ser ', 'hacer ', 'puede ', 'yo ', 'tu ', 
+                'te ', 'lo ', 'se ', ' y ', ' o ', ' a ', 'al ', 'no ', 'si ',
+                'su ', 'ha ', 'era ', 'son ', 'nos ', 'mi ', 'porque ', 'cuando ',
+                'muy ', 'sin ', 'sobre ', 'tambien ', 'fue ', 'hasta ', 'donde '
+            ];
+
+            let mejorResultado = {
+                shift: 0,
+                matches: 0,
+                text: ''
+            };
+
+            const charsetLength = charset.length;
+            
+            for (let shift = 1; shift < charsetLength; shift++) {
+                let resultado = '';
+                
+                for (let i = 0; i < input.length; i++) {
+                    const char = input[i];
+                    const index = charset.indexOf(char);
+
+                    if (index !== -1) {
+                        let newIndex = (index - shift) % charsetLength;
+                        if (newIndex < 0) {
+                            newIndex += charsetLength;
+                        }
+                        resultado += charset[newIndex];
+                    } else {
+                        resultado += char;
+                    }
+                }
+
+                let matches = 0;
+                const resultadoLower = resultado.toLowerCase();
+                
+                for (const palabra of palabrasComunes) {
+                    if (resultadoLower.includes(palabra)) {
+                        matches++;
+                    }
+                }
+
+                if (matches > mejorResultado.matches) {
+                    mejorResultado = {
+                        shift: shift,
+                        matches: matches,
+                        text: resultado
+                    };
+                }
+            }
+
+            return {
+                found: mejorResultado.matches >= 2,
+                shift: mejorResultado.shift,
+                matches: mejorResultado.matches,
+                text: mejorResultado.text
+            };
         }
 
         // [FN-003]
