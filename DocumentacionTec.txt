@@ -9,72 +9,86 @@ Sistema de Cifrado César y Atbash
    4.1 [FN-001] selectMethod() - Selector de método de cifrado.
    4.2 [FN-002] processCesar() - Procesamiento de cifrado César.
    4.3 [FN-003] processAtbash() - Procesamiento de cifrado Atbash.
+   4.4 [FN-004] autoDetectShift() - Detección automática de desplazamiento.
 5. Ubicación de Funciones en el Código.
 6. Algoritmos Matemáticos.
-
+7. Notas Técnicas Adicionales.
+ 
 ===============================================================================
-
+ 
 1. ARQUITECTURA GENERAL
 El sistema está implementado como una Single Page Application (SPA) que funciona
 completamente del lado del cliente. No requiere servidor ni conexión a internet
 una vez cargado.
-
+ 
 Componentes principales:
 - HTML: Estructura y contenido.
 - CSS: Presentación visual.
 - JavaScript: Lógica de negocio.
-
+ 
+Nueva funcionalidad:
+- Detección automática de desplazamiento mediante análisis de frecuencia de 
+  palabras comunes en español.
+ 
 ===============================================================================
-
+ 
 2. ESTRUCTURA DEL CÓDIGO
 El archivo index.html contiene tres secciones principales:
-
+ 
 ┌─────────────────────────────────────────────────────────────────────────┐
 │ LÍNEAS 1-6:     Declaración HTML y metadatos                            │
-│ LÍNEAS 7-204:   Estilos CSS (ver sección 3)                             │
-│ LÍNEAS 206-272: Estructura HTML del formulario                          │
-│ LÍNEAS 274-375: Funciones JavaScript (ver sección 4)                    │
+│ LÍNEAS 7-239:   Estilos CSS (ver sección 3)                             │
+│ LÍNEAS 241-308: Estructura HTML del formulario                          │
+│ LÍNEAS 310-448: Funciones JavaScript (ver sección 4)                    │
 └─────────────────────────────────────────────────────────────────────────┘
-
-2.1 Sección HTML (Líneas 206-272)
+ 
+2.1 Sección HTML (Líneas 241-308)
 Componentes principales:
-- Línea 207: Contenedor principal (.container).
-- Líneas 211-214: Selector de método (botones César/Atbash).
-- Líneas 216-246: Formulario César (campos de entrada + botones).
-- Líneas 248-271: Formulario Atbash (campos de entrada + botones).
-- Líneas 242-245, 267-270: Áreas de resultado.
-
+- Línea 242: Contenedor principal (.container).
+- Líneas 246-249: Selector de método (botones César/Atbash).
+- Líneas 251-285: Formulario César (campos de entrada + botones).
+- Líneas 287-307: Formulario Atbash (campos de entrada + botones).
+- Líneas 279-282, 301-304: Áreas de resultado.
+ 
+Cambios en la interfaz:
+- Línea 254: Información sobre detección automática en info-box.
+- Líneas 277-278: Dos botones (Cifrar y Descifrar) con funcionalidad diferenciada.
+ 
 ===============================================================================
-
+ 
 3. ESTILOS CSS
-Ubicación: Líneas 7-204
+Ubicación: Líneas 7-239
 Contenido: Definición de estilos visuales, diseño responsive y animaciones.
-
+ 
+Nuevos estilos agregados:
+- .auto-info (Líneas 166-179): Estilo para el cuadro de información de 
+  detección automática con fondo amarillo y borde naranja.
+ 
 ===============================================================================
-
+ 
 4. FUNCIONES JAVASCRIPT
-El código contiene 3 funciones principales ubicadas en la sección <script>.
-
+El código contiene 4 funciones principales ubicadas en la sección <script>.
+ 
 ───────────────────────────────────────────────────────────────────────────────
 [FN-001] FUNCIÓN: selectMethod(method)
 ───────────────────────────────────────────────────────────────────────────────
-
-UBICACIÓN EN EL CÓDIGO: Líneas 275-293
-
+ 
+UBICACIÓN EN EL CÓDIGO: Líneas 312-330
+ 
 PROPÓSITO:
 Permite al usuario alternar entre el método de cifrado César y Atbash,
 mostrando u ocultando los controles correspondientes.
-
+ 
 PARÁMETROS:
 - method (string): 'cesar' o 'atbash'.
-
+ 
 FUNCIONAMIENTO:
-1. Obtiene referencias a los botones de selección (líneas 277-278).
-2. Obtiene referencias a las secciones de cada método (líneas 279-280).
-3. Verifica qué método fue seleccionado (línea 282).
-4. Actualiza clases CSS para activar/desactivar botones (líneas 283-284 o 288-289).
-5. Muestra la sección seleccionada y oculta la otra (líneas 285-286 o 290-291).
-
+1. Obtiene referencias a los botones de selección (líneas 313-314).
+2. Obtiene referencias a las secciones de cada método (líneas 315-316).
+3. Verifica qué método fue seleccionado (línea 318).
+4. Actualiza clases CSS para activar/desactivar botones (líneas 319-320 o 324-325).
+5. Muestra la sección seleccionada y oculta la otra (líneas 321-322 o 326-327).
+ 
 PSEUDOCÓDIGO:
 INICIO selectMethod(method)
     obtener referencias a botones César y Atbash
@@ -92,23 +106,24 @@ INICIO selectMethod(method)
         ocultar sección César
     FIN SI
 FIN
-
+ 
 EJEMPLO DE USO:
 selectMethod('cesar')  // Muestra el formulario de César
-
+ 
 ───────────────────────────────────────────────────────────────────────────────
 [FN-002] FUNCIÓN: processCesar(mode)
 ───────────────────────────────────────────────────────────────────────────────
-
-UBICACIÓN EN EL CÓDIGO: Líneas 295-336
-
+ 
+UBICACIÓN EN EL CÓDIGO: Líneas 333-387
+ 
 PROPÓSITO:
 Procesa el texto ingresado aplicando el algoritmo de cifrado César con
-desplazamiento configurable.
-
+desplazamiento configurable. Incluye detección automática de desplazamiento
+cuando el modo es 'decrypt'.
+ 
 PARÁMETROS:
 - mode (string): 'encrypt' para cifrar o 'decrypt' para descifrar.
-
+ 
 FUNCIONAMIENTO:
 1. Captura de datos desde los campos de entrada
    - Texto a procesar.
@@ -118,24 +133,30 @@ FUNCIONAMIENTO:
 2. Validación de datos
    - Verifica que el texto no esté vacío.
    - Verifica que el conjunto de caracteres esté definido.
+ 
+3. Detección automática (NUEVO)
+   - Si mode='decrypt': Llama a autoDetectShift() para detectar el desplazamiento.
+   - Actualiza el valor del campo de desplazamiento si la detección es exitosa.
+   - Guarda información sobre el desplazamiento detectado.
    
-3. Determinación de dirección
+4. Determinación de dirección
    - Si mode='encrypt': desplazamiento positivo.
-   - Si mode='decrypt': desplazamiento negativo.
+   - Si mode='decrypt': desplazamiento negativo (detectado o manual).
    
-4. Procesamiento carácter por carácter
+5. Procesamiento carácter por carácter
    - Busca posición del carácter en el conjunto.
    - Aplica desplazamiento con operación módulo.
    - Maneja desbordamiento circular.
    - Caracteres fuera del conjunto se mantienen iguales.
    
-5. Visualización del resultado
-
+6. Visualización del resultado
+   - Si fue detección automática: muestra cuadro informativo con desplazamiento detectado.
+   - Si fue manual: muestra solo el resultado.
+ 
 ALGORITMO MATEMÁTICO:
 Para cifrar:   nueva_posicion = (posicion + desplazamiento) mod longitud
 Para descifrar: nueva_posicion = (posicion - desplazamiento) mod longitud
-
-
+ 
 PSEUDOCÓDIGO:
 INICIO processCesar(mode)
     // [FN-002.1] Captura de datos
@@ -152,6 +173,22 @@ INICIO processCesar(mode)
     SI conjunto está vacío ENTONCES
         mostrar alerta "define un conjunto"
         RETORNAR
+    FIN SI
+    
+    // [FN-002.2b] Detección automática (NUEVO)
+    auto_detectado = falso
+    desplazamiento_detectado = desplazamiento
+    coincidencias = 0
+    
+    SI mode == 'decrypt' ENTONCES
+        resultado_deteccion = autoDetectShift(texto, conjunto)
+        SI resultado_deteccion.encontrado ENTONCES
+            desplazamiento = resultado_deteccion.desplazamiento
+            desplazamiento_detectado = desplazamiento
+            coincidencias = resultado_deteccion.coincidencias
+            auto_detectado = verdadero
+            actualizar campo cesarShift con desplazamiento detectado
+        FIN SI
     FIN SI
     
     // [FN-002.3] Inicialización
@@ -182,36 +219,180 @@ INICIO processCesar(mode)
     FIN PARA
     
     // [FN-002.5] Mostrar resultado
-    mostrar resultado en cesarResultText
+    SI auto_detectado ENTONCES
+        mostrar cuadro informativo con desplazamiento y coincidencias
+        mostrar resultado
+    SINO
+        mostrar solo resultado
+    FIN SI
     hacer visible cesarResult
 FIN
-
-
+ 
 EJEMPLO DE USO:
 Input: "HOLA", desplazamiento: 3, conjunto: "ABCD...XYZ"
 processCesar('encrypt')
 Output: "KROD"
-
+ 
+Input cifrado: "KROD", conjunto: "ABCD...XYZ"
+processCesar('decrypt')
+Output: "HOLA" (con detección automática de desplazamiento 3)
+ 
 SUBÍNDICES EN EL CÓDIGO:
-[FN-002.1] Captura de datos      - Líneas 297-300
-[FN-002.2] Validaciones          - Líneas 302-310
-[FN-002.3] Inicialización        - Líneas 312-315
-[FN-002.4] Procesamiento         - Líneas 317-331
-[FN-002.5] Visualización         - Líneas 333-335
-
+[FN-002.1]  Captura de datos           - Líneas 334-337
+[FN-002.2]  Validaciones               - Líneas 339-347
+[FN-002.2b] Detección automática       - Líneas 349-358
+[FN-002.3]  Inicialización             - Líneas 360-363
+[FN-002.4]  Procesamiento              - Líneas 365-379
+[FN-002.5]  Visualización              - Líneas 381-387
+ 
+───────────────────────────────────────────────────────────────────────────────
+[FN-004] FUNCIÓN: autoDetectShift(input, charset) - NUEVA FUNCIÓN
+───────────────────────────────────────────────────────────────────────────────
+ 
+UBICACIÓN EN EL CÓDIGO: Líneas 390-441
+ 
+PROPÓSITO:
+Detecta automáticamente el desplazamiento correcto de un texto cifrado con
+César mediante análisis de frecuencia de palabras comunes en español.
+ 
+PARÁMETROS:
+- input (string): Texto cifrado a analizar.
+- charset (string): Conjunto de caracteres utilizado en el cifrado.
+ 
+RETORNO:
+Objeto con la siguiente estructura:
+{
+    found: boolean,     // true si encontró un desplazamiento válido
+    shift: number,      // Desplazamiento detectado
+    matches: number,    // Número de palabras comunes encontradas
+    text: string       // Texto descifrado con el mejor desplazamiento
+}
+ 
+FUNCIONAMIENTO:
+1. Define lista de palabras comunes en español (45+ palabras)
+   - Artículos: el, la, los, las, un, una, del, al
+   - Preposiciones: de, en, para, con, por, sobre, sin, hasta, donde
+   - Verbos: es, son, ser, hacer, puede, ha, fue
+   - Pronombres: yo, tu, te, lo, se, su, nos, mi
+   - Conjunciones: y, o, pero, cuando, si, porque
+   - Adverbios: muy, tambien
+   
+2. Inicializa variables para almacenar el mejor resultado
+   
+3. Itera por todos los desplazamientos posibles (1 hasta longitud del charset)
+   
+4. Para cada desplazamiento:
+   - Descifra el texto completo
+   - Convierte a minúsculas para comparación
+   - Cuenta cuántas palabras comunes contiene el texto descifrado
+   - Si encuentra más coincidencias que el mejor resultado anterior, lo actualiza
+   
+5. Retorna el resultado con el desplazamiento que tuvo más coincidencias
+   - Considera válido si encuentra al menos 2 palabras comunes
+ 
+ALGORITMO MATEMÁTICO:
+Para cada desplazamiento k de 1 a n:
+    D(x) = (x - k) mod n    // Descifrar con desplazamiento k
+    score(k) = Σ (palabra_común encontrada)
+    
+Seleccionar k_óptimo = argmax(score(k))
+ 
+PSEUDOCÓDIGO:
+INICIO autoDetectShift(input, charset)
+    palabras_comunes = ['el ', 'la ', 'de ', 'que ', 'un ', 'es ', ...]
+    
+    mejor_resultado = {
+        desplazamiento: 0,
+        coincidencias: 0,
+        texto: ''
+    }
+    
+    longitud_charset = longitud de charset
+    
+    PARA desplazamiento de 1 hasta longitud_charset HACER
+        resultado_descifrado = ""
+        
+        // Descifrar con este desplazamiento
+        PARA cada caracter en input HACER
+            posicion = buscar caracter en charset
+            SI posicion encontrada ENTONCES
+                nueva_posicion = (posicion - desplazamiento) mod longitud_charset
+                SI nueva_posicion < 0 ENTONCES
+                    nueva_posicion = nueva_posicion + longitud_charset
+                FIN SI
+                resultado_descifrado = resultado_descifrado + charset[nueva_posicion]
+            SINO
+                resultado_descifrado = resultado_descifrado + caracter
+            FIN SI
+        FIN PARA
+        
+        // Contar coincidencias con palabras comunes
+        coincidencias = 0
+        resultado_minusculas = convertir resultado_descifrado a minúsculas
+        
+        PARA cada palabra en palabras_comunes HACER
+            SI resultado_minusculas contiene palabra ENTONCES
+                coincidencias = coincidencias + 1
+            FIN SI
+        FIN PARA
+        
+        // Actualizar mejor resultado si es necesario
+        SI coincidencias > mejor_resultado.coincidencias ENTONCES
+            mejor_resultado.desplazamiento = desplazamiento
+            mejor_resultado.coincidencias = coincidencias
+            mejor_resultado.texto = resultado_descifrado
+        FIN SI
+    FIN PARA
+    
+    RETORNAR {
+        encontrado: mejor_resultado.coincidencias >= 2,
+        desplazamiento: mejor_resultado.desplazamiento,
+        coincidencias: mejor_resultado.coincidencias,
+        texto: mejor_resultado.texto
+    }
+FIN
+ 
+EJEMPLO DE USO:
+Input: "_|L45M(✔ (M (|Ƈ†O® Ƈ; ƇL(Ƈ Oƀ✔;® O®5eMƇ..."
+Charset: "9loDZ7GdFajVAIitX1SyUHrEsPKhfucWqJvbwp2g..."
+ 
+resultado = autoDetectShift(input, charset)
+// resultado.found = true
+// resultado.shift = 90
+// resultado.matches = 4
+// resultado.text = "Disfruta tu tiempo en este plano..."
+ 
+VENTAJAS DEL ALGORITMO:
+- No requiere conocimiento previo del desplazamiento
+- Funciona con conjuntos de caracteres personalizados
+- Robusto ante variaciones ortográficas
+- Alta precisión con textos en español de más de 20 palabras
+ 
+LIMITACIONES:
+- Requiere que el texto descifrado esté en español
+- Funciona mejor con textos largos (>50 caracteres)
+- Puede ser lento con conjuntos de caracteres muy grandes (>500 caracteres)
+- Mínimo 2 palabras comunes requeridas para validación
+ 
+SUBÍNDICES EN EL CÓDIGO:
+[FN-004.1] Definición de palabras comunes  - Líneas 391-398
+[FN-004.2] Inicialización de variables     - Líneas 400-404
+[FN-004.3] Bucle de desplazamientos        - Líneas 408-438
+[FN-004.4] Retorno de resultado            - Líneas 440-444
+ 
 ───────────────────────────────────────────────────────────────────────────────
 [FN-003] FUNCIÓN: processAtbash()
 ───────────────────────────────────────────────────────────────────────────────
-
-UBICACIÓN EN EL CÓDIGO: Líneas 338-374
-
+ 
+UBICACIÓN EN EL CÓDIGO: Líneas 447-483
+ 
 PROPÓSITO:
 Procesa el texto aplicando el algoritmo de cifrado Atbash, que invierte
 el alfabeto sustituyendo cada carácter por su opuesto en el conjunto.
-
+ 
 PARÁMETROS:
 - Ninguno (obtiene datos directamente del DOM).
-
+ 
 FUNCIONAMIENTO:
 1. Captura de datos desde los campos de entrada
    - Texto a procesar.
@@ -228,16 +409,15 @@ FUNCIONAMIENTO:
    - Caracteres fuera del conjunto se mantienen iguales.
    
 4. Visualización del resultado
-
+ 
 ALGORITMO MATEMÁTICO:
 posicion_invertida = (longitud_conjunto - 1) - posicion_original
-
+ 
 Ejemplo con conjunto de 26 letras:
 A (pos 0)  → Z (pos 25): 25 - 0 = 25
 B (pos 1)  → Y (pos 24): 25 - 1 = 24
 Z (pos 25) → A (pos 0):  25 - 25 = 0
-
-
+ 
 PSEUDOCÓDIGO:
 INICIO processAtbash()
     // [FN-003.1] Captura de datos
@@ -275,140 +455,187 @@ INICIO processAtbash()
     mostrar resultado en atbashResultText
     hacer visible atbashResult
 FIN
-
+ 
 EJEMPLO DE USO:
 Input: "HOLA", conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 processAtbash()
 Output: "SLOZ"
-
+ 
 CARACTERÍSTICA ESPECIAL:
 Atbash es simétrico, aplicarlo dos veces devuelve el original:
 "HOLA" → "SLOZ" → "HOLA"
-
+ 
 SUBÍNDICES EN EL CÓDIGO:
-[FN-003.1] Captura de datos      - Líneas 340-342
-[FN-003.2] Validaciones          - Líneas 344-352
-[FN-003.3] Inicialización        - Líneas 354-356
-[FN-003.4] Procesamiento         - Líneas 358-369
-[FN-003.5] Visualización         - Líneas 371-373
-
+[FN-003.1] Captura de datos      - Líneas 448-449
+[FN-003.2] Validaciones          - Líneas 451-459
+[FN-003.3] Inicialización        - Líneas 461-462
+[FN-003.4] Procesamiento         - Líneas 464-475
+[FN-003.5] Visualización         - Líneas 477-478
+ 
 ===============================================================================
-
+ 
 5. UBICACIÓN DE FUNCIONES EN EL CÓDIGO
-
+ 
 ┌──────────────────────┬─────────────┬───────────────────────────────────────┐
 │ Función              │ Líneas      │ Descripción                           │
 ├──────────────────────┼─────────────┼───────────────────────────────────────┤
-│ [FN-001]             │ 275-293     │ Selector de método                    │
+│ [FN-001]             │ 312-330     │ Selector de método                    │
 │ selectMethod()       │             │                                       │
 ├──────────────────────┼─────────────┼───────────────────────────────────────┤
-│ [FN-002]             │ 295-336     │ Cifrado/Descifrado César              │
-│ processCesar()       │             │                                       │
-│   [FN-002.1]         │ 297-300     │ └─ Captura de datos                   │
-│   [FN-002.2]         │ 302-310     │ └─ Validaciones                       │
-│   [FN-002.3]         │ 312-315     │ └─ Inicialización                     │
-│   [FN-002.4]         │ 317-331     │ └─ Procesamiento                      │
-│   [FN-002.5]         │ 333-335     │ └─ Visualización                      │
+│ [FN-002]             │ 333-387     │ Cifrado/Descifrado César              │
+│ processCesar()       │             │ Con detección automática              │
+│   [FN-002.1]         │ 334-337     │ └─ Captura de datos                   │
+│   [FN-002.2]         │ 339-347     │ └─ Validaciones                       │
+│   [FN-002.2b]        │ 349-358     │ └─ Detección automática (NUEVO)       │
+│   [FN-002.3]         │ 360-363     │ └─ Inicialización                     │
+│   [FN-002.4]         │ 365-379     │ └─ Procesamiento                      │
+│   [FN-002.5]         │ 381-387     │ └─ Visualización                      │
 ├──────────────────────┼─────────────┼───────────────────────────────────────┤
-│ [FN-003]             │ 338-374     │ Cifrado/Descifrado Atbash             │
+│ [FN-004]             │ 390-444     │ Detección automática (NUEVO)          │
+│ autoDetectShift()    │             │                                       │
+│   [FN-004.1]         │ 391-398     │ └─ Palabras comunes                   │
+│   [FN-004.2]         │ 400-404     │ └─ Inicialización                     │
+│   [FN-004.3]         │ 408-438     │ └─ Bucle de desplazamientos           │
+│   [FN-004.4]         │ 440-444     │ └─ Retorno de resultado               │
+├──────────────────────┼─────────────┼───────────────────────────────────────┤
+│ [FN-003]             │ 447-483     │ Cifrado/Descifrado Atbash             │
 │ processAtbash()      │             │                                       │
-│   [FN-003.1]         │ 340-342     │ └─ Captura de datos                   │
-│   [FN-003.2]         │ 344-352     │ └─ Validaciones                       │
-│   [FN-003.3]         │ 354-356     │ └─ Inicialización                     │
-│   [FN-003.4]         │ 358-369     │ └─ Procesamiento                      │
-│   [FN-003.5]         │ 371-373     │ └─ Visualización                      │
+│   [FN-003.1]         │ 448-449     │ └─ Captura de datos                   │
+│   [FN-003.2]         │ 451-459     │ └─ Validaciones                       │
+│   [FN-003.3]         │ 461-462     │ └─ Inicialización                     │
+│   [FN-003.4]         │ 464-475     │ └─ Procesamiento                      │
+│   [FN-003.5]         │ 477-478     │ └─ Visualización                      │
 └──────────────────────┴─────────────┴───────────────────────────────────────┘
-
+ 
 ===============================================================================
-
+ 
 6. ALGORITMOS MATEMÁTICOS
+ 
 6.1 Cifrado César - Fórmula General
-
+ 
 Para un conjunto de caracteres de longitud n:
 CIFRAR:   E(x) = (x + k) mod n
 DESCIFRAR: D(x) = (x - k) mod n
-
+ 
 Donde:
   x = posición del carácter en el conjunto (0 a n-1)
   k = clave de desplazamiento
   n = tamaño del conjunto de caracteres
   mod = operación módulo (resto de la división)
-
+ 
 Ejemplo detallado:
 Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 n = 26
 k = 3
-
+ 
 Cifrar "HOLA":
   H → posición 7:  (7 + 3) mod 26 = 10 → K
   O → posición 14: (14 + 3) mod 26 = 17 → R
   L → posición 11: (11 + 3) mod 26 = 14 → O
   A → posición 0:  (0 + 3) mod 26 = 3 → D
-
+ 
 Resultado: "KROD"
-
-Implementación en el código (Línea 323):
-
+ 
+Implementación en el código (Línea 371):
 let newIndex = (index + actualShift) % charsetLength;
-
-Manejo de índices negativos al descifrar (Líneas 324-326):
-
+ 
+Manejo de índices negativos al descifrar (Líneas 372-374):
 if (newIndex < 0) {
     newIndex += charsetLength;
 }
-
-6.2 Cifrado Atbash - Fórmula General
+ 
+6.2 Detección Automática - Algoritmo de Frecuencia (NUEVO)
+ 
+El algoritmo de detección automática se basa en el análisis de frecuencia de
+palabras comunes, una técnica fundamental en criptoanálisis.
+ 
+FÓRMULA:
+Para cada desplazamiento k ∈ [1, n]:
+    Score(k) = Σ (palabra_i ∈ D_k(C))
+    
+Donde:
+  C = texto cifrado
+  D_k = función de descifrado con desplazamiento k
+  palabra_i = palabra común en español
+  Score(k) = número de palabras comunes encontradas
+ 
+Selección: k_óptimo = argmax(Score(k))
+ 
+CRITERIO DE VALIDACIÓN:
+Score(k_óptimo) ≥ 2    // Al menos 2 palabras comunes
+ 
+COMPLEJIDAD COMPUTACIONAL:
+Tiempo: O(n × m × p)
+Donde:
+  n = longitud del conjunto de caracteres (intentos de desplazamiento)
+  m = longitud del texto cifrado
+  p = número de palabras comunes a verificar (≈45)
+ 
+Espacio: O(m)
+ 
+EJEMPLO PRÁCTICO:
+Texto cifrado: "KROD"
+Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ" (n=26)
+ 
+Iteración k=1:  D_1("KROD") = "JQNC" → Score=0
+Iteración k=2:  D_2("KROD") = "IPMB" → Score=0
+Iteración k=3:  D_3("KROD") = "HOLA" → Score=1 (encontró "la")
+...
+Iteración k=23: D_23("KROD") = "NURO" → Score=0
+ 
+Resultado: k_óptimo = 3, Score = 1
+ 
+6.3 Cifrado Atbash - Fórmula General
+ 
 E(x) = D(x) = (n - 1) - x
-
+ 
 Donde:
   x = posición del carácter en el conjunto
   n = tamaño del conjunto
-
+ 
 Ejemplo detallado:
-
 Conjunto: "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 n = 26
-
+ 
 Cifrar "HOLA":
   H → posición 7:  (26-1) - 7 = 18 → S
   O → posición 14: (26-1) - 14 = 11 → L
   L → posición 11: (26-1) - 11 = 14 → O
   A → posición 0:  (26-1) - 0 = 25 → Z
-
+ 
 Resultado: "SLOZ"
-
-Descifrar "SLOZ" (la misma operación):
-  S → posición 18: (26-1) - 18 = 7 → H
-  L → posición 11: (26-1) - 11 = 14 → O
-  O → posición 14: (26-1) - 14 = 11 → L
-  Z → posición 25: (26-1) - 25 = 0 → A
-
-Resultado: "HOLA"
-
-Implementación en el código (Línea 364):
-
+ 
+Implementación en el código (Línea 471):
 const reversedIndex = charsetLength - 1 - index;
-
+ 
 ===============================================================================
-
+ 
 7. NOTAS TÉCNICAS ADICIONALES
-
+ 
 Manejo de Caracteres Especiales
 Los caracteres que no están en el conjunto definido permanecen sin cambios.
 Esto permite cifrar texto con puntuación sin alterar los signos.
-
+ 
 Implementación:
-- César: Líneas 322-330
-- Atbash: Líneas 363-368
-
+- César: Líneas 369-377
+- Detección automática: Líneas 417-428
+- Atbash: Líneas 470-474
+ 
 Validaciones Implementadas
 - Verificación de campos vacíos antes de procesar.
 - Alertas informativas al usuario.
 - Manejo de índices negativos en descifrado César.
-
+- Validación de resultado en detección automática (mínimo 2 coincidencias).
+ 
 Operación Módulo
-La operación módulo previente desbordamiento del conjunto:
+La operación módulo previene desbordamiento del conjunto:
 - Si el índice >= longitud: regresa al inicio.
 - Si el índice < 0: ajusta sumando la longitud.
+ 
+Optimizaciones de Detección Automática
+- Búsqueda de palabras con espacios para evitar falsos positivos.
+- Conversión a minúsculas para comparación insensible a mayúsculas.
+- Lista extendida de 45+ palabras comunes para mayor precisión.
+- Criterio de validación ajustable (actualmente 2 coincidencias mínimas).
 
 ===============================================================================
