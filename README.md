@@ -146,7 +146,7 @@ index.html
 │   └── <script>             # Lógica JavaScript
 │       ├── selectMethod()       # [FN-001]
 │       ├── processCesar()       # [FN-002]
-│       ├── autoDetectShift()    # [FN-004] Nueva función
+│       ├── autoDetectShift()    # [FN-004]
 │       └── processAtbash()      # [FN-003]
 ```
 
