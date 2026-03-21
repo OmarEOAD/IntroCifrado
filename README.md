@@ -7,6 +7,7 @@ Sistema web interactivo para cifrar y descifrar mensajes utilizando dos métodos
 ## Características
 
 - **Dos métodos de cifrado**: César y Atbash
+- **Detección automática de desplazamiento**: El sistema detecta automáticamente el desplazamiento correcto al descifrar
 - **Conjunto de caracteres personalizable**: Define tu propio alfabeto para el cifrado
 - **Interfaz intuitiva**: Diseño moderno y fácil de usar
 - **Responsive**: Funciona en computadoras, tablets y móviles
@@ -14,7 +15,7 @@ Sistema web interactivo para cifrar y descifrar mensajes utilizando dos métodos
 
 ## Cómo usar
 
-### Cifrado César
+### Cifrado César Manual
 
 1. Selecciona el método "Cifrado César" en la parte superior
 2. Configura el desplazamiento (número de posiciones a mover)
@@ -22,11 +23,24 @@ Sistema web interactivo para cifrar y descifrar mensajes utilizando dos métodos
 4. Escribe tu mensaje en el área de texto
 5. Haz clic en "Cifrar" para encriptar o "Descifrar" para desencriptar
 
+### Descifrado César Automático
+
+1. Selecciona el método "Cifrado César"
+2. Define el conjunto de caracteres que se usó para cifrar
+3. Pega el texto cifrado en el área de texto
+4. Haz clic en "Descifrar" - El sistema detectará automáticamente el desplazamiento correcto
+5. El resultado mostrará el desplazamiento detectado y el número de coincidencias encontradas
+
 **Ejemplo:**
 - Texto original: `HOLA`
 - Desplazamiento: `3`
 - Conjunto: `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
 - Resultado cifrado: `KROD`
+
+- Texto cifrado: `KROD`
+- Conjunto: `ABCDEFGHIJKLMNOPQRSTUVWXYZ`
+- Clic en "Descifrar" → Sistema detecta desplazamiento: `3`
+- Resultado: `HOLA` (con indicador de detección automática)
 
 ### Cifrado Atbash
 
@@ -61,6 +75,27 @@ Donde:
 - k = desplazamiento (clave)
 - n = tamaño del conjunto de caracteres
 ```
+
+### Detección Automática de Desplazamiento
+
+El sistema implementa un algoritmo inteligente que detecta automáticamente el desplazamiento correcto al descifrar
+
+**Algoritmo:**
+
+- Prueba todos los desplazamientos posibles (de 1 hasta n)
+- Para cada desplazamiento, descifra el texto
+- Analiza el texto descifrado buscando palabras comunes en español
+- Cuenta cuántas palabras comunes encuentra
+- Selecciona el desplazamiento con mayor número de coincidencias
+
+**Palabras comunes analizadas:**
+
+- Artículos: el, la, los, las, un, una
+- Preposiciones: de, en, para, con, por, sobre
+- Verbos: es, son, ser, hacer, puede
+- Pronombres: yo, tu, te, lo, se, su
+- Conjunciones: y, o, pero, cuando, si
+
 
 ### Cifrado Atbash
 
@@ -99,7 +134,7 @@ Para protección real, usa algoritmos modernos como:
 ## Estructura del Código
 
 ```
-cifrado_clasico.html
+index.html
 ├── <head>
 │   └── <style>              # Estilos CSS
 ├── <body>
@@ -109,22 +144,48 @@ cifrado_clasico.html
 │   │   ├── Controles César
 │   │   └── Controles Atbash
 │   └── <script>             # Lógica JavaScript
-│       ├── selectMethod()
-│       ├── processCesar()
-│       └── processAtbash()
+│       ├── selectMethod()       # [FN-001]
+│       ├── processCesar()       # [FN-002]
+│       ├── autoDetectShift()    # [FN-004] Nueva función
+│       └── processAtbash()      # [FN-003]
 ```
 
 ## Funciones Principales
 
-### `selectMethod(method)`
+### `selectMethod(method) - [FN-001]`
 Cambia entre los modos César y Atbash, mostrando los controles correspondientes.
 
-### `processCesar(mode)`
+### `processCesar(mode)- [FN-002]`
 Procesa el texto con el algoritmo César. Parámetros:
 - `mode`: 'encrypt' o 'decrypt'
+  - Si `mode === 'encrypt'`: Usa el desplazamiento manual
+  - Si `mode === 'decrypt'`: Activa la detección automática de desplazamiento
 
-### `processAtbash()`
+### `processAtbash() - [FN-003]`
 Procesa el texto con el algoritmo Atbash. Como es simétrico, cifrar y descifrar son la misma operación.
+
+### `autoDetectShift(input, charset) - [FN-004]`
+Detecta automáticamente el desplazamiento correcto analizando palabras comunes.
+## Parámetros:
+
+input: Texto cifrado a analizar
+charset: Conjunto de caracteres utilizado
+
+```
+{
+    found: boolean,      // true si encontró un desplazamiento válido
+    shift: number,       // Desplazamiento detectado
+    matches: number,     // Número de palabras comunes encontradas
+    text: string        // Texto descifrado
+}
+```
+
+## Algoritmo:
+
+- Itera por todos los desplazamientos posibles (1 a longitud del charset)
+- Descifra el texto con cada desplazamiento
+- Cuenta palabras comunes en el resultado
+- Retorna el desplazamiento con más coincidencias (mínimo 2)
 
 ## Ejemplos de Uso
 
@@ -159,6 +220,8 @@ Salida: HVXIVGL
 1. Los caracteres fuera del conjunto definido no se cifran (permanecen sin cambios)
 2. El desplazamiento en César debe ser un número positivo
 3. Los espacios y puntuación se pueden incluir en el conjunto o dejarse sin cifrar
+4. La detección automática funciona mejor con textos en español que contengan palabras comunes
+5. Para conjuntos de caracteres muy grandes, la detección automática puede tardar unos segundos
 
 ## Contribuciones
 
@@ -179,6 +242,11 @@ Este proyecto es de código abierto y acepta contribuciones. Para colaborar:
 - Conjunto de caracteres personalizable
 - Interfaz responsive
 - Validación de entrada
+- Detección automática de desplazamiento en el cifrado César
+- Análisis inteligente de palabras comunes en español
+- Indicador visual del desplazamiento detectado
+- Actualización automática del campo de desplazamiento
+- Mejora en la experiencia de usuario al descifrar mensajes
 
 ## Licencia
 
@@ -187,6 +255,8 @@ Este proyecto se distribuye bajo licencia educativa. Libre para usar con fines a
 ## Autor
 
 Desarrollado como proyecto académico para la materia de Seguridad Informática.
+Materia impartida por el profesor Arturo Ocampo Silva.
+Software desarrollado por el alumno Erik Omar Alba Dávila.
 Universidad Autonoma de Aguascalientes.
 
 ## Referencias
